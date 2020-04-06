@@ -19,12 +19,12 @@ interface GetParams {
 export default {
     async getAll(params: GetAllParams, callback: Function, errorCallback: Function) {
         const response: AxiosResponse = await Service.get(`${pokemonEndPoint}/?${querify(params)}`);
-        response.status === 200 ? callback(pokemonsMapper(response.data)) : errorCallback(response);
+        response.status === 200 ? callback(await pokemonsMapper(response.data)) : errorCallback(response);
     },
 
     async GetAllByUrl(url: string, callback: Function, errorCallback: Function) {
         const response: AxiosResponse = await Axios.get(url);
-        response.status === 200 ? callback(pokemonsMapper(response.data)) : errorCallback(response);
+        response.status === 200 ? callback(await pokemonsMapper(response.data)) : errorCallback(response);
     },
 
     async get(params: GetParams, callback: Function, errorCallback: Function) {
