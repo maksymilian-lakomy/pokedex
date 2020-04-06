@@ -1,4 +1,4 @@
-interface IType {
+interface Type {
     slot: number;
     type: {
         name: string,
@@ -6,7 +6,7 @@ interface IType {
     }
 }
 
-interface ISpecies {
+interface Species {
     name: string;
     url: string;
 }
@@ -20,14 +20,14 @@ export interface IPokemonData {
 
     base_experience: number;
 
-    species: ISpecies;
+    species: Species;
 
     sprites: {
         back_default: string,
         front_default: string
     }
 
-    types: IType[];
+    types: Type[];
 
 }
 
@@ -39,14 +39,14 @@ export default class PokemonData {
     readonly weight: number;
     readonly baseExperience: number;
 
-    readonly species: ISpecies;
+    readonly species: Species;
 
     readonly sprites: {
         backDefault: string,
         frontDefault: string
     }
 
-    readonly types: IType[];
+    readonly types: Type[];
 
     constructor(apiData: IPokemonData) {
         this.id = apiData.id;
