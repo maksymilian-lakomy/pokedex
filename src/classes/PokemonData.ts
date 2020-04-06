@@ -1,9 +1,9 @@
 interface Type {
     slot: number;
     type: {
-        name: string,
-        url: string
-    }
+        name: string;
+        url: string;
+    };
 }
 
 interface Species {
@@ -11,7 +11,7 @@ interface Species {
     url: string;
 }
 
-export interface IPokemonData {
+export interface PokemonApiData {
     id: number;
     name: string;
 
@@ -23,9 +23,9 @@ export interface IPokemonData {
     species: Species;
 
     sprites: {
-        back_default: string,
-        front_default: string
-    }
+        back_default: string;
+        front_default: string;
+    };
 
     types: Type[];
 
@@ -42,13 +42,13 @@ export default class PokemonData {
     readonly species: Species;
 
     readonly sprites: {
-        backDefault: string,
-        frontDefault: string
+        backDefault: string;
+        frontDefault: string;
     }
 
     readonly types: Type[];
 
-    constructor(apiData: IPokemonData) {
+    constructor(apiData: PokemonApiData) {
         this.id = apiData.id;
         this.name = apiData.name;
 
