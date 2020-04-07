@@ -39,18 +39,19 @@ export default {
     },
 
     async getFiltersOptions(params: GetFilterOptions, callback: Function, errorCallback: Function) {
-        const response: AxiosResponse = await Service.get(`${pokemonEndPoint}-${params.filter}`);
+        const response: AxiosResponse = await Service.get(`${pokemonEndPoint}-${params.filter}?limit=1`);
         if (response.status === 200) {
             let result = response.data as FilterResponse;
-            if (result.results.length < result.count)
-                await Service.get(`${pokemonEndPoint}-${params.filter}?limit=${result.count}`).then((finalResponse: AxiosResponse) => {
-                    result = response.data as FilterResponse;
+            const finalResponse = await Service.get(`${pokemonEndPoint}-${params.filter}?limit=${result.count}`);
+            if (finalResponse.status === 200) {
+                result = finalResponse.data as FilterResponse;
+                const filterMap = new Map<string, boolean>();
+                result.results.forEach(filter => {
+                    filterMap.set(filter.name, false);
                 });
-            const filterMap = new Map<string, boolean>();
-            result.results.forEach(filter => {
-                filterMap.set(filter.name, false);
-            });
-            callback(filterMap);
+                callback(filterMap);
+            } else
+                errorCallback(finalResponse);
         } else
             errorCallback(response);
     }
