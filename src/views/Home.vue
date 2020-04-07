@@ -4,15 +4,16 @@
             <button v-for="page in pagesCount" :key="page">{{page}}</button>
         </div>-->
         <!-- <input type="text" v-model="search" /> -->
+        <button @click="changeFilters">Test filtrów</button>
         <div class="grid">
-            <v-observer style="top: 0" />
+            <v-observer @intersection="loadPreviousPokemons" style="top: 0" />
             <v-pokemon-card
-                v-for="pokemon in pokemonSpecies"
+                v-for="pokemon in pokemons"
                 :key="pokemon.id"
                 :pokemonData="pokemon.varieties[0].pokemonFull"
             />
             <!-- <div v-show="load">Wczytywanie</div> -->
-            <v-observer style="bottom: 0" />
+            <v-observer @intersection="loadNextPokemons" style="bottom: 0" />
         </div>
     </div>
 </template>
@@ -38,37 +39,49 @@ interface FilterKeyValuePair {
 
 @Component({
     beforeRouteEnter(to: Route, from: Route, next: Function) {
-        if (!to.query.page) next({ path: `${to.path}?page=1` });
+        if (!to.query.page) next({ path: `${to.fullPath}?page=1` });
         else next();
     },
     components: {
         "v-pokemon-card": PokemonCard,
         "v-observer": Observer
+    },
+    computed: {
+        pokemons() {
+            const pokemonSpecies = this.$data.pokemonSpecies as Array<
+                PokemonSpeciesData
+            >;
+            return pokemonSpecies.sort((a, b) => a.id - b.id);
+        }
     }
 })
 export default class Home extends Vue {
     page = {
         limit: 20,
-        offset: 0
+        offset: 0,
+        loading: false
     };
 
     filters = new Array<FilterKeyValuePair>();
     pokemonSpeciesList = new Array<string>();
-    pokemonSpecies: Array<PokemonSpeciesData> = [];
+    pokemonSpecies = new Array<PokemonSpeciesData>();
 
     async created() {
         this.page.offset = (+this.$route.query.page - 1) * this.page.limit;
         const filters = this.parseQuery();
-        if (filters.length > 0) await this.loadFilteredPokemons(filters);
-        else await this.loadPokemonList();
-        console.log(this.pokemonSpeciesList.length);
-        this.loadPokemons();
+        filters.length > 0 ? await this.loadFilteredPokemons(filters) : await this.loadPokemonList();
+        this.loadNextPokemons();
+    }
+
+    changeFilters() {
+        this.$router.replace({query: {color: 'yellow'}});
     }
 
     async loadPokemons(direction = 1) {
+        const startPosition = this.page.offset + this.pokemonSpecies.length;
         for (
-            let i = this.page.offset;
-            i < this.page.offset + this.page.limit * direction &&
+            let i = startPosition;
+            i < startPosition + this.page.limit * direction &&
             i < this.pokemonSpeciesList.length &&
             i >= 0;
             i++
@@ -83,6 +96,45 @@ export default class Home extends Vue {
                 }
             );
         }
+    }
+
+    async loadNextPokemons() {
+        if (this.page.loading) return;
+        const startPosition = this.page.offset + this.pokemonSpecies.length;
+        this.loadPokemon(startPosition, this.page.limit);
+    }
+
+    async loadPreviousPokemons() {
+        if (this.page.loading) return;
+        this.page.offset -= this.page.limit;
+        let limit = this.page.limit;
+        if (this.page.offset < 0) {
+            limit += this.page.offset;
+            this.page.offset = 0;
+        }
+        this.loadPokemon(this.page.offset, limit);
+    }
+
+    async loadPokemon(startPosition: number, limit: number) {
+        this.page.loading = true;
+        const newPokemons = new Array<PokemonSpeciesData>();
+        for (
+            let i = startPosition;
+            i < startPosition + limit && i < this.pokemonSpeciesList.length;
+            i++
+        ) {
+            await pokemonSpeciesService.getByUrl(
+                this.pokemonSpeciesList[i],
+                (pokemon: PokemonSpeciesData) => {
+                   newPokemons.push(pokemon);
+                },
+                (error: AxiosResponse) => {
+                    console.error(error);
+                }
+            );
+        }
+        this.pokemonSpecies.push(...newPokemons);
+        this.page.loading = false;
     }
 
     async loadAllFiltersOptions() {

@@ -14,6 +14,7 @@ interface PokemonSpeciesApiData {
     color: Color;
     shape: Shape;
     varieties: VarietyApi[];
+    generation: Generation;
 }
 
 interface Color {
@@ -36,6 +37,10 @@ interface Variety {
     pokemonFull?: PokemonData;
 }
 
+interface Generation {
+    name: string;
+}
+
 export default class PokemonSpeciesData {
     readonly id: number;
     readonly name: string;
@@ -43,6 +48,8 @@ export default class PokemonSpeciesData {
 
     readonly color: Color;
     readonly shape: Shape;
+
+    readonly generation: Generation;
 
     readonly varieties: Variety[];
 
@@ -52,6 +59,7 @@ export default class PokemonSpeciesData {
         this.evolutionChain = apiData.evolution_chain;
         this.color = apiData.color;
         this.shape = apiData.shape;
+        this.generation = apiData.generation;
         this.varieties = apiData.varieties.map(apiVariety => {
             return {
                 isDefault: apiVariety.is_default,
