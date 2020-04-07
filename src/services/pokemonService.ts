@@ -10,13 +10,19 @@ interface GetParams {
 }
 
 export default {
-    async get(params: GetParams, callback: Function, errorCallback: Function) {
+    async get(params: GetParams): Promise<PokemonData> {
         const response: AxiosResponse = await Service.get(`${pokemonEndPoint}/${params.pokemon}`);
-        response.status === 200 ? callback(new PokemonData(response.data)) : errorCallback(response);
+        if (response.status !== 200)
+            throw response;
+            
+        return new PokemonData(response.data);
     },
 
-    async getByUrl(url: string, callback: Function, errorCallback: Function) {
+    async getByUrl(url: string): Promise<PokemonData> {
         const response: AxiosResponse = await Axios.get(url);
-        response.status === 200 ? callback(new PokemonData(response.data)) : errorCallback(response);
+        if (response.status !== 200)
+            throw response;
+
+        return new PokemonData(response.data);
     }
 }

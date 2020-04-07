@@ -16,43 +16,43 @@ interface GetParams {
 }
 
 async function getFullSpecies(pokemonSpeciesData: PokemonSpeciesData) {
-    await Promise.all(
-        pokemonSpeciesData.varieties.map(async variety => {
-            await pokemonService.getByUrl(variety.pokemon.url, (pokemonData: PokemonData) => {
-                variety.pokemonFull = pokemonData;
-            }, (error: AxiosResponse) => {
-                console.error(error);
-            });
-        }));
+    for await (const variety of pokemonSpeciesData.varieties) 
+        variety.pokemonFull = await pokemonService.getByUrl(variety.pokemon.url)
     return pokemonSpeciesData;
 }
 
 export default {
-    async getAll(callback: Function, errorCallback: Function) {
+    async getMap(): Promise<Map<string, string>> {
         const response: AxiosResponse = await Service.get(`${pokemonEndPoint}?limit=1`);
-        if (response.status === 200) {
-            let result = response.data as PageResponse<PokemonSimpleData>;
-            const finalResponse = await Service.get(`${pokemonEndPoint}?limit=${result.count}`);
-            if (finalResponse.status === 200) {
-                result = finalResponse.data as PageResponse<PokemonSimpleData>;
-                const pokemonMap = new Map<string, string>();
-                result.results.forEach(pokemon => {
-                    pokemonMap.set(pokemon.name, pokemon.url);
-                });
-                callback(pokemonMap);
-            } else
-                errorCallback(response);
-        } else
-            errorCallback(response);
-},
+        if (response.status !== 200) 
+            throw response;
 
-async get(params: GetParams, callback: Function, errorCallback: Function) {
-    const response: AxiosResponse = await Service.get(`${pokemonEndPoint}/${params.pokemon}`);
-    response.status === 200 ? callback(await getFullSpecies(new PokemonSpeciesData(response.data))) : errorCallback(response);
-},
+        let result = response.data as PageResponse<PokemonSimpleData>;
+        const finalResponse = await Service.get(`${pokemonEndPoint}?limit=${result.count}`);
+        if (finalResponse.status !== 200) 
+            throw finalResponse;
 
-async getByUrl(url: string, callback: Function, errorCallback: Function) {
-    const response: AxiosResponse = await Axios.get(url);
-    response.status === 200 ? callback(await getFullSpecies(new PokemonSpeciesData(response.data))) : errorCallback(response);
-}
+        result = finalResponse.data as PageResponse<PokemonSimpleData>;
+        const pokemonSpeciesMap = new Map<string, string>();
+        result.results.forEach(pokemon => {
+            pokemonSpeciesMap.set(pokemon.name, pokemon.url);
+        });
+        return pokemonSpeciesMap;
+    },
+
+    async get(params: GetParams): Promise<PokemonSpeciesData> {
+        const response: AxiosResponse = await Service.get(`${pokemonEndPoint}/${params.pokemon}`);
+        if (response.status !== 200)
+            throw response;
+
+        return await getFullSpecies(new PokemonSpeciesData(response.data));
+    },
+
+    async getByUrl(url: string): Promise<PokemonSpeciesData> {
+        const response: AxiosResponse = await Axios.get(url);
+        if (response.status !== 200)
+            throw response;
+
+        return await getFullSpecies(new PokemonSpeciesData(response.data));
+    }
 }
