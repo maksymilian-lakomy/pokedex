@@ -45,11 +45,11 @@ export default {
             const finalResponse = await Service.get(`${pokemonEndPoint}-${params.filter}?limit=${result.count}`);
             if (finalResponse.status === 200) {
                 result = finalResponse.data as FilterResponse;
-                const filterMap = new Map<string, boolean>();
-                result.results.forEach(filter => {
-                    filterMap.set(filter.name, false);
+                const filterOptions: string[] = [];
+                result.results.forEach(option => {
+                    filterOptions.push(option.name);
                 });
-                callback(filterMap);
+                callback(filterOptions);
             } else
                 errorCallback(finalResponse);
         } else
