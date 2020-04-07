@@ -2,18 +2,18 @@
     <div>
         <!-- <div>
             <button v-for="page in pagesCount" :key="page">{{page}}</button>
-        </div>
-        <input type="text" v-model="search" />
+        </div>-->
+        <!-- <input type="text" v-model="search" /> -->
         <div class="grid">
             <v-observer style="top: 0" />
             <v-pokemon-card
-                v-for="pokemon in pokemonsFiltered"
+                v-for="pokemon in pokemonSpecies"
                 :key="pokemon.id"
                 :pokemonData="pokemon.varieties[0].pokemonFull"
             />
-            <div v-show="load">Wczytywanie</div>
-            <v-observer style="bottom: 0" /> 
-        </div>-->
+            <!-- <div v-show="load">Wczytywanie</div> -->
+            <v-observer style="bottom: 0" />
+        </div>
     </div>
 </template>
 
@@ -22,10 +22,14 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import { Route } from "vue-router";
 
+import PokemonCard from "@/components/PokemonCard.vue";
+import Observer from "@/components/Observer.vue";
+
 import { filters, Filter } from "@/enums/Filters";
 import pokemonFilterService from "@/services/pokemonFilterService";
 import pokemonSpeciesService from "@/services/pokemonSpeciesService";
 import { AxiosResponse } from "axios";
+import PokemonSpeciesData from "../classes/PokemonSpeciesData";
 
 interface FilterKeyValuePair {
     filter: Filter;
@@ -36,31 +40,49 @@ interface FilterKeyValuePair {
     beforeRouteEnter(to: Route, from: Route, next: Function) {
         if (!to.query.page) next({ path: `${to.path}?page=1` });
         else next();
+    },
+    components: {
+        "v-pokemon-card": PokemonCard,
+        "v-observer": Observer
     }
-    // components: {
-    //     "v-pokemon-card": PokemonCard,
-    //     "v-observer": Observer
-    // },
 })
 export default class Home extends Vue {
-    api = {
-        limit: 1000,
-        offset: 0
-    };
     page = {
         limit: 20,
         offset: 0
     };
 
-    activeFilters = new Array<FilterKeyValuePair>();
-    pokemonSpeciesList = new Map<string, string>();
+    filters = new Array<FilterKeyValuePair>();
+    pokemonSpeciesList = new Array<string>();
+    pokemonSpecies: Array<PokemonSpeciesData> = [];
 
     async created() {
         this.page.offset = (+this.$route.query.page - 1) * this.page.limit;
-        await this.loadPokemonList();
-        await this.loadAllFiltersOptions();
         const filters = this.parseQuery();
-        this.loadFilteredPokemons(filters);
+        if (filters.length > 0) await this.loadFilteredPokemons(filters);
+        else await this.loadPokemonList();
+        console.log(this.pokemonSpeciesList.length);
+        this.loadPokemons();
+    }
+
+    async loadPokemons(direction = 1) {
+        for (
+            let i = this.page.offset;
+            i < this.page.offset + this.page.limit * direction &&
+            i < this.pokemonSpeciesList.length &&
+            i >= 0;
+            i++
+        ) {
+            pokemonSpeciesService.getByUrl(
+                this.pokemonSpeciesList[i],
+                (pokemon: PokemonSpeciesData) => {
+                    this.pokemonSpecies.push(pokemon);
+                },
+                (error: AxiosResponse) => {
+                    console.error(error);
+                }
+            );
+        }
     }
 
     async loadAllFiltersOptions() {
@@ -86,37 +108,42 @@ export default class Home extends Vue {
 
     async loadFilteredPokemons(filters: Array<FilterKeyValuePair>) {
         let filteredResults = new Map<string, string>();
-        filters.map(async filter => {
-            let sumSameFilter = new Map<string, string>();
-            await Promise.all(
-                filter.options.map(async option => {
-                    await pokemonFilterService.getAll(
-                        { filter: filter.filter.api, name: option },
-                        (pokemons: Map<string, string>) => {
-                            sumSameFilter = new Map([
-                                ...sumSameFilter,
-                                ...pokemons
-                            ]);
-                        },
-                        (error: AxiosResponse) => {
-                            console.error(error);
-                        }
+        await Promise.all(
+            filters.map(async filter => {
+                let sumSameFilter = new Map<string, string>();
+                await Promise.all(
+                    filter.options.map(async option => {
+                        await pokemonFilterService.getAll(
+                            { filter: filter.filter.api, name: option },
+                            (pokemons: Map<string, string>) => {
+                                sumSameFilter = new Map([
+                                    ...sumSameFilter,
+                                    ...pokemons
+                                ]);
+                            },
+                            (error: AxiosResponse) => {
+                                console.error(error);
+                            }
+                        );
+                    })
+                );
+                if (filteredResults.size === 0) filteredResults = sumSameFilter;
+                else
+                    filteredResults = new Map(
+                        [...filteredResults].filter(pokemon =>
+                            sumSameFilter.has(pokemon[0])
+                        )
                     );
-                })
-            );
-            if (filteredResults.size === 0)
-                filteredResults = sumSameFilter;
-            else
-                filteredResults = new Map([...filteredResults].filter(pokemon => sumSameFilter.has(pokemon[0])));
-            console.log(filteredResults);
-        });
+            })
+        );
+        this.pokemonSpeciesList = [...filteredResults.values()];
     }
 
     async loadFilterOptions(filter: Filter) {
         await pokemonFilterService.getFiltersOptions(
             { filter: filter.api },
             (options: string[]) => {
-                this.activeFilters.push({ filter, options });
+                this.filters.push({ filter, options });
             },
             (error: AxiosResponse) => {
                 console.error(error);
@@ -127,7 +154,7 @@ export default class Home extends Vue {
     async loadPokemonList() {
         await pokemonSpeciesService.getAll(
             (pokemons: Map<string, string>) => {
-                this.pokemonSpeciesList = pokemons;
+                this.pokemonSpeciesList = [...pokemons.values()];
             },
             (error: AxiosResponse) => {
                 console.error(error);
