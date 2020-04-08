@@ -3,8 +3,9 @@ import { AxiosResponse } from 'axios';
 
 const pokemonEndPoint = '/pokemon';
 
-import { Filter } from "@/enums/Filters";
+import { filters, Filter } from "@/enums/Filters";
 import PokemonSimpleData from '@/classes/PokemonSimpleData';
+import { Route } from 'vue-router';
 
 interface GetFilteredPokemonSpecies {
     filter: Filter;
@@ -85,5 +86,21 @@ export default {
         const options: string[] = [];
         result.results.forEach(option => options.push(option.name));
         return options;
+    },
+
+    getActiveFilters(route: Route) {
+        const query = route.query as Record<string, Array<string>>;
+        const activeFilters = new Array<{
+            filter: Filter;
+            options: Array<string>;
+        }>();
+        filters.forEach(filter => {
+            if (!query[filter.api]) return;
+            let options = query[filter.api];
+            if (typeof options === "string")
+                options = new Array<string>(options);
+            activeFilters.push({ filter, options });
+        });
+        return activeFilters;
     }
 }

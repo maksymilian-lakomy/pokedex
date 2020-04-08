@@ -5,14 +5,15 @@
         </div>-->
         <!-- <input type="text" v-model="search" /> -->
         <div class="grid">
-            <v-observer @intersection="loadPreviousPokemons" style="top: 0" />
+            <!-- <v-observer v-if="pokemonSpecies.length > 0" @intersection="loadPreviousPokemons" style="top: 0" /> -->
             <v-pokemon-card
-                v-for="pokemon in pokemons"
+                v-for="pokemon in pokemonSpecies"
                 :key="pokemon.id"
-                :pokemonData="pokemon.varieties[0].pokemonFull"
+                :pokemonSpecies="pokemon"
+                :variety="0"
             />
             <!-- <div v-show="load">Wczytywanie</div> -->
-            <v-observer @intersection="loadNextPokemons" style="bottom: 0" />
+            <v-observer v-if="pokemonSpecies.length > 0" @intersection="loadNextPokemons" style="bottom: 0" />
         </div>
     </div>
 </template>
@@ -20,7 +21,7 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import { Route } from "vue-router";
+import { Route, Next } from "vue-router";
 
 import PokemonCard from "@/components/PokemonCard.vue";
 import Observer from "@/components/Observer.vue";
@@ -31,11 +32,9 @@ import pokemonSpeciesService from "@/services/pokemonSpeciesService";
 import { AxiosResponse } from "axios";
 import PokemonSpeciesData from "../classes/PokemonSpeciesData";
 
+Component.registerHooks(["beforeRouteEnter", "beforeRouteUpdate"]);
+
 @Component({
-    beforeRouteEnter(to: Route, from: Route, next: Function) {
-        if (!to.query.page) next({ path: `${to.fullPath}?page=1` });
-        else next();
-    },
     components: {
         "v-pokemon-card": PokemonCard,
         "v-observer": Observer
@@ -64,23 +63,38 @@ export default class Home extends Vue {
     pokemonSpeciesList = new Array<string>();
     pokemonSpecies = new Array<PokemonSpeciesData>();
 
-    async created() {
+    async created() {       
+        const filters = pokemonFilterService.getActiveFilters(this.$route);
+        let pokemonSpeciesMap = new Map<string, string>();
+        if (filters.length > 0) 
+            pokemonSpeciesMap = await pokemonFilterService.getFiltersIntersection({filters});
+        else
+            pokemonSpeciesMap = await pokemonSpeciesService.getMap();
+        const search = this.$route.query.search as string;
+        if (search)
+            pokemonSpeciesMap.forEach((value: string, key: string) => {
+                if (!key.includes(search))
+                    pokemonSpeciesMap.delete(key);
+            });
+        this.pokemonSpeciesList = [...pokemonSpeciesMap.values()];
         this.page.offset = (+this.$route.query.page - 1) * this.page.limit;
-        const activeFilters = this.getActiveFilters();
-        activeFilters.length > 0
-            ? await this.loadFilteredPokemonSpeciesList(activeFilters)
-            : await this.loadPokemonSpeciesList();
         this.loadNextPokemons();
+    }
+
+    setPokemonsSpeciesList(list: Array<string>) {
+        this.pokemonSpeciesList = list;
     }
 
     async loadNextPokemons() {
         if (this.page.loading) return;
+        this.page.loading = true;
         const startPosition = this.page.offset + this.pokemonSpecies.length;
         this.loadPage(startPosition, this.page.limit);
     }
 
     async loadPreviousPokemons() {
         if (this.page.loading) return;
+        this.page.loading = true;
         this.page.offset -= this.page.limit;
         let limit = this.page.limit;
         if (this.page.offset < 0) {
@@ -98,23 +112,9 @@ export default class Home extends Vue {
             newPokemons.push(
                 await pokemonSpeciesService.getByUrl(this.pokemonSpeciesList[i])
             );
-        this.pokemonSpecies.push(...newPokemons);
-    }
-
-    getActiveFilters() {
-        const query = this.$route.query as Record<string, Array<string>>;
-        const activeFilters = new Array<{
-            filter: Filter;
-            options: Array<string>;
-        }>();
-        filters.forEach(filter => {
-            if (!query[filter.api]) return;
-            let options = query[filter.api];
-            if (typeof options === "string")
-                options = new Array<string>(options);
-            activeFilters.push({ filter, options });
-        });
-        return activeFilters;
+        console.log(startPosition, limit, condition(startPosition));
+        this.pokemonSpecies = [...this.pokemonSpecies, ...newPokemons];
+        this.page.loading = false;
     }
 
     async loadFilteredPokemonSpeciesList(
