@@ -22,9 +22,9 @@
             <ul class="pokemon-card__info__tags">
                 <li
                     class="pokemon-card__info__tags__tag"
-                    v-for="(type, i) in pokemonData.types"
+                    v-for="(tag, i) in tags"
                     :key="i"
-                >{{type.type.name | capitalize}}</li>
+                >{{tag.name | capitalize}}</li>
             </ul>
         </div>
     </div>
@@ -77,6 +77,11 @@ export default class PokemonCard extends Vue {
 
     get filterPortrait() {
         return ['generation-vii', 'generation-viii'].indexOf(this.$props.pokemonSpecies.generation.name) !== -1;
+    }
+
+    get tags() {
+        //[this.$props.pokemonSpecies.color, this.$props.pokemonSpecies.habitat, this.$props.pokemonSpecies.shape]//
+        return [...this.pokemonData.tags];
     }
 }
 </script>
