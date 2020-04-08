@@ -1,15 +1,4 @@
-interface Type {
-    slot: number;
-    type: {
-        name: string;
-        url: string;
-    };
-}
-
-interface Species {
-    name: string;
-    url: string;
-}
+import Tag from './Tag';
 
 export interface PokemonApiData {
     id: number;
@@ -20,14 +9,17 @@ export interface PokemonApiData {
 
     base_experience: number;
 
-    species: Species;
+    species: Tag;
 
     sprites: {
         back_default: string;
         front_default: string;
     };
 
-    types: Type[];
+    types: {
+        slot: number;
+        type: Tag;   
+    }[];
 
 }
 
@@ -39,14 +31,14 @@ export default class PokemonData {
     readonly weight: number;
     readonly baseExperience: number;
 
-    readonly species: Species;
+    readonly species: Tag;
 
     readonly sprites: {
         backDefault: string;
         frontDefault: string;
     }
 
-    readonly types: Type[];
+    readonly tags: Tag[];
 
     constructor(apiData: PokemonApiData) {
         this.id = apiData.id;
@@ -62,7 +54,9 @@ export default class PokemonData {
             backDefault: apiData.sprites.back_default,
             frontDefault: apiData.sprites.front_default
         }
-        this.types = apiData.types;
+        this.tags = apiData.types.map(type => {
+            return type.type;
+        });
 
     }
 
