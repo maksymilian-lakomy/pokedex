@@ -1,10 +1,17 @@
 <template>
     <div class="pokemon-card" @mouseenter="active = true" @mouseleave="active = false">
         <div class="pokemon-card__portrait">
+            <img class="pokemon-card__portrait__img pokemon-card__portrait__img--placeholder"
+                src="@/assets/pokemon-placeholder.png"
+                v-if="!portrait.loaded"
+            />
             <img
                 class="pokemon-card__portrait__img"
-                :class="{'pokemon-card__portrait__img--active': active}"
+                :class="{'pokemon-card__portrait__img--active': active,
+                'pokemon-card__portrait__img--filter': filterPortrait}"
                 :src="pokemonData.sprites.frontDefault"
+                @load="onLoaded()"
+                v-show="portrait.loaded"
             />
         </div>
         <div class="pokemon-card__info">
@@ -27,20 +34,17 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 
-import PokemonData from "@/classes/PokemonData";
+import PokemonSpeciesData from '@/classes/PokemonSpeciesData';
 
 @Component({
     props: {
-        pokemonData: {
-            type: PokemonData,
+        pokemonSpecies: {
+            type: PokemonSpeciesData,
             required: true
-        }
-    },
-    computed: {
-        id() {
-            let id: string = this.$props.pokemonData.id.toString();
-            while (id.length < 3) id = `0${id}`;
-            return id;
+        },
+        variety: {
+            type: Number,
+            required: true
         }
     },
     filters: {
@@ -53,6 +57,27 @@ import PokemonData from "@/classes/PokemonData";
 })
 export default class PokemonCard extends Vue {
     active = false;
+    portrait = {
+        loaded: false
+    }
+
+    onLoaded() {
+        this.portrait.loaded = true;
+    }
+
+    get id() {
+        let id: string = this.$props.pokemonSpecies.id.toString();
+        while (id.length < 3) id = `0${id}`;
+        return id;
+    }
+
+    get pokemonData() {
+        return this.$props.pokemonSpecies.varieties[this.$props.variety].pokemonFull;
+    }
+
+    get filterPortrait() {
+        return ['generation-vii', 'generation-viii'].indexOf(this.$props.pokemonSpecies.generation.name) !== -1;
+    }
 }
 </script>
 
@@ -73,6 +98,10 @@ export default class PokemonCard extends Vue {
         &__img--active
             transform: translateY(-.25em)
             opacity: 1
+        &__img--placeholder
+            opacity: 0.25
+        &__img--filter
+            image-rendering: auto !important
 
     &__info
         text-align: left
