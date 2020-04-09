@@ -4,7 +4,7 @@
             <input name="search" @keyup="onEnter($event, $event.target.value)" :value="search" />
             <button @click="displayFilter('color')">Colors</button>
             <button @click="displayFilter('habitat')">Habitats</button>
-            <button @click="displayFilter('shpa')">Shapes</button>
+            <button @click="displayFilter('shape')">Shapes</button>
         </nav>
         <transition name="filters">
             <div v-if="filter !== null" class="filter-panel">
