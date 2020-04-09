@@ -3,7 +3,7 @@ import { AxiosResponse } from 'axios';
 
 const pokemonEndPoint = '/pokemon';
 
-import { filters, Filter } from "@/enums/Filters";
+import { filters } from "@/enums/Filters";
 import PokemonSimpleData from '@/classes/PokemonSimpleData';
 import { Route } from 'vue-router';
 
@@ -13,15 +13,16 @@ interface GetFilteredPokemonSpecies {
 }
 
 interface GetAllFilteredPokemonSpecies {
-    filter: [string, Set<string>];
+    filter: string;
+    options: Array<string>;
 }
 
 interface GetFiltersIntersection {
-    filters: Map<string, Set<string>>;
+    filters: Record<string, Array<string>>;
 }
 
 interface GetFilterOptions {
-    filter: Filter;
+    filter: string;
 }
 
 interface FilterSpeciesResponse {
@@ -47,10 +48,10 @@ export default {
         return pokemonSpecies;
     },
 
-    async getAllFilteredPokemonSpecies({filter}: GetAllFilteredPokemonSpecies): Promise<Map<string, string>> {
+    async getAllFilteredPokemonSpecies({filter, options}: GetAllFilteredPokemonSpecies): Promise<Map<string, string>> {
         let result = new Map<string, string>();
-        for await (const option of filter[1]) {
-            const pokemonSpieces = await this.getFilteredPokemonSpecies({filter: filter[0], option});
+        for await (const option of options) {
+            const pokemonSpieces = await this.getFilteredPokemonSpecies({filter, option});
             result = new Map([...result, ...pokemonSpieces]);
         }
         return result;
@@ -58,8 +59,8 @@ export default {
 
     async getFiltersIntersection({filters}: GetFiltersIntersection): Promise<Map<string, string>> {
         let result = new Map<string, string>();
-        for await (const filter of filters) {
-            const allPokemonSpieces = await this.getAllFilteredPokemonSpecies({filter});
+        for (const filter in filters) {
+            const allPokemonSpieces = await this.getAllFilteredPokemonSpecies({filter, options: filters[filter]});
             if (result.size === 0)
                 result = allPokemonSpieces;
             else
@@ -68,13 +69,13 @@ export default {
         return result;
     },
 
-    async getOptions(params: GetFilterOptions): Promise<Array<string>> {
-        const response: AxiosResponse = await Service.get(`${pokemonEndPoint}-${params.filter.api}?limit=1`);
+    async getOptions({filter}: GetFilterOptions): Promise<Array<string>> {
+        const response: AxiosResponse = await Service.get(`${pokemonEndPoint}-${filter}?limit=1`);
         if (response.status !== 200)
             throw response;
 
         let result = response.data as FilterResponse;
-        const finalResponse = await Service.get(`${pokemonEndPoint}-${params.filter.api}?limit=${result.count}`);
+        const finalResponse = await Service.get(`${pokemonEndPoint}-${filter}?limit=${result.count}`);
         if (finalResponse.status !== 200)
             throw response;
 
@@ -83,20 +84,4 @@ export default {
         result.results.forEach(option => options.push(option.name));
         return options;
     },
-
-    getActiveFilters(route: Route) {
-        const query = route.query as Record<string, Array<string>>;
-        const activeFilters = new Array<{
-            filter: Filter;
-            options: Array<string>;
-        }>();
-        filters.forEach(filter => {
-            if (!query[filter.api]) return;
-            let options = query[filter.api];
-            if (typeof options === "string")
-                options = new Array<string>(options);
-            activeFilters.push({ filter, options });
-        });
-        return activeFilters;
-    }
 }

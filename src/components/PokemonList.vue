@@ -2,7 +2,7 @@
     <div class="pokemon-list">
         <!-- <v-observer v-if="pokemonSpecies.length > 0" @intersection="loadPreviousPokemons" style="top: 0" /> -->
         <v-pokemon-card
-            v-for="pokemon in pokemonSpecies"
+            v-for="pokemon in pokemonSpeciesSorted"
             :key="pokemon.id"
             :pokemonSpecies="pokemon"
             :variety="0"
@@ -48,21 +48,24 @@ import PokemonCard from "@/components/PokemonCard.vue";
 export default class PokemonList extends Vue {
     pokemonSpecies = new Array<PokemonSpeciesData>();
 
+    get pokemonSpeciesSorted() {
+        return this.pokemonSpecies.sort((a: PokemonSpeciesData, b: PokemonSpeciesData) => a.id - b.id);
+    }
+
     async created() {
-        await this.loadNextPokemons();
+        this.pokemonSpecies = await this.loadPage(this.$props.offset, this.$props.limit);
     }   
     
     @Watch('pokemonSpeciesList')
-    async onPropertyChange() {
-        this.pokemonSpecies = [];
-        this.loadNextPokemons();
+    async onPokemonSpeciesListChange() {
+        this.pokemonSpecies = await this.loadPage(this.$props.offset, this.$props.limit);
     }
 
 
     async loadNextPokemons() {
         // if (this.page.loading) return;
         const startPosition = this.$props.offset + this.pokemonSpecies.length;
-        await this.loadPage(startPosition, this.$props.limit);
+        this.pokemonSpecies = [...this.pokemonSpecies, ...await this.loadPage(startPosition, this.$props.limit)];
     }
 
     async loadPreviousPokemons() {
@@ -74,7 +77,7 @@ export default class PokemonList extends Vue {
             limit += this.$props.offset;
             this.$emit('update:offset', 0);
         }
-        await this.loadPage(this.$props.offset, limit);
+        this.pokemonSpecies = [...this.pokemonSpecies, ...await this.loadPage(this.$props.offset, limit)];
     }
 
     async loadPage(startPosition: number, limit: number) {
@@ -88,8 +91,7 @@ export default class PokemonList extends Vue {
                     this.$props.pokemonSpeciesList[i]
                 )
             );
-        this.pokemonSpecies = [...this.pokemonSpecies, ...newPokemons];
-        // this.page.loading = false;
+        return newPokemons;
     }
 }
 </script>

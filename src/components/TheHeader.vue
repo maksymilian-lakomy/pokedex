@@ -2,21 +2,21 @@
     <header>
         <nav>
             <input name="search" @keyup="onEnter($event, $event.target.value)" :value="search" />
-            <button @click="displayFilter(0)">Colors</button>
-            <button @click="displayFilter(1)">Habitats</button>
-            <button @click="displayFilter(2)">Shapes</button>
+            <button @click="displayFilter('color')">Colors</button>
+            <button @click="displayFilter('habitat')">Habitats</button>
+            <button @click="displayFilter('shpa')">Shapes</button>
         </nav>
         <transition name="filters">
             <div v-if="filter !== null" class="filter-panel">
                 <ul class="filter-panel__list">
                     <li
                         class="filter-panel__list__element"
-                        v-for="(option, i) in filters[filter].options"
+                        v-for="(option, i) in filters[filter]"
                         :key="i"
                     >
                         <button
-                            :class="{'filter-panel__list__element__button--active': (activeFilters.has(filters[filter].filter.api) && activeFilters.get(filters[filter].filter.api).has(option))}"
-                            @click="setFilter(filters[filter].filter, option)"
+                            :class="{'filter-panel__list__element__button--active': isFilterOptionActive(filter, option)}"
+                            @click="setFilter(filter, option)"
                         >{{option}}</button>
                     </li>
                 </ul>
@@ -28,55 +28,40 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
+import { Prop } from "vue-property-decorator";
 
-import { filters, Filter } from "@/enums/Filters";
+import { filters } from "@/enums/Filters";
 import pokemonFilterService from "../services/pokemonFilterService";
 
-@Component({
-    props: {
-        search: {
-            type: String,
-            required: true
-        },
-        activeFilters: {
-            type: Map,
-            required: true
-        }
-    }
-})
+@Component
 export default class TheHeader extends Vue {
-    filters = new Array<{
-        filter: Filter;
-        options: Array<string>;
-    }>();
+    filters: Record<string, Array<string>> = {};
+    filter: string | null = null;
 
-    filter: number | null = null;
+    @Prop(String)
+    readonly search!: string;
 
-    displayFilter(filterIndex: number) {
+    @Prop(Object)
+    readonly activeFilters!: Record<string, Array<string>>;
+
+    isFilterOptionActive(filter: string, option: string) {
+        return this.activeFilters[filter] && this.activeFilters[filter].findIndex(_option => _option === option) !== -1;
+    }
+
+    displayFilter(filterIndex: string) {
         filterIndex === this.filter
             ? (this.filter = null)
             : (this.filter = filterIndex);
     }
 
-    setFilter(filter: Filter, option: string) {
-        const activeFilters = this.$props.activeFilters as Map<
-            string,
-            Set<string>
-        >;
-        if (!activeFilters.has(filter.api))
-            activeFilters.set(filter.api, new Set<string>());
-        activeFilters.get(filter.api)?.has(option)
-            ? activeFilters.get(filter.api)?.delete(option)
-            : activeFilters.get(filter.api)?.add(option);
-        this.$emit("update:activeFilters", activeFilters);
-        this.$emit("reload");
+    setFilter(filter: string, option: string) {
+        this.$emit("optionChange", { filter, option });
     }
 
     async created() {
         for (const filter of filters) {
-            this.filters.push({
-                filter,
-                options: await pokemonFilterService.getOptions({ filter })
+            this.filters[filter] = await pokemonFilterService.getOptions({
+                filter
             });
         }
     }
