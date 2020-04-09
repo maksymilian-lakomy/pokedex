@@ -8,20 +8,16 @@ import PokemonSimpleData from '@/classes/PokemonSimpleData';
 import { Route } from 'vue-router';
 
 interface GetFilteredPokemonSpecies {
-    filter: Filter;
+    filter: string;
     option: string;
 }
 
 interface GetAllFilteredPokemonSpecies {
-    filter: Filter;
-    options: Array<string>;
+    filter: [string, Set<string>];
 }
 
 interface GetFiltersIntersection {
-    filters: {
-        filter: Filter;
-        options: Array<string>;
-    }[];
+    filters: Map<string, Set<string>>;
 }
 
 interface GetFilterOptions {
@@ -39,7 +35,7 @@ interface FilterResponse {
 
 export default {
     async getFilteredPokemonSpecies(params: GetFilteredPokemonSpecies): Promise<Map<string, string>> {
-        const response: AxiosResponse = await Service.get(`${pokemonEndPoint}-${params.filter.api}/${params.option}`);
+        const response: AxiosResponse = await Service.get(`${pokemonEndPoint}-${params.filter}/${params.option}`);
         if (response.status !== 200) 
             throw response;
 
@@ -51,10 +47,10 @@ export default {
         return pokemonSpecies;
     },
 
-    async getAllFilteredPokemonSpecies({filter, options}: GetAllFilteredPokemonSpecies): Promise<Map<string, string>> {
+    async getAllFilteredPokemonSpecies({filter}: GetAllFilteredPokemonSpecies): Promise<Map<string, string>> {
         let result = new Map<string, string>();
-        for await (const option of options) {
-            const pokemonSpieces = await this.getFilteredPokemonSpecies({filter, option});
+        for await (const option of filter[1]) {
+            const pokemonSpieces = await this.getFilteredPokemonSpecies({filter: filter[0], option});
             result = new Map([...result, ...pokemonSpieces]);
         }
         return result;
@@ -63,7 +59,7 @@ export default {
     async getFiltersIntersection({filters}: GetFiltersIntersection): Promise<Map<string, string>> {
         let result = new Map<string, string>();
         for await (const filter of filters) {
-            const allPokemonSpieces = await this.getAllFilteredPokemonSpecies(filter);
+            const allPokemonSpieces = await this.getAllFilteredPokemonSpecies({filter});
             if (result.size === 0)
                 result = allPokemonSpieces;
             else

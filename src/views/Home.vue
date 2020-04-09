@@ -1,6 +1,6 @@
 <template>
     <div class="home">
-        <v-header class="home__header" :search.sync="search" />
+        <v-header class="home__header" :search.sync="search" :activeFilters.sync="activeFilters" @reload="reload()"/>
         <v-pokemon-list
             class="home__listing"
             v-if="pokemonSpeciesList.length > 0"
@@ -20,12 +20,12 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import { Watch } from "vue-property-decorator";
 import { Route, Next } from "vue-router";
+import { Filter } from "@/enums/Filters";
 
 import TheHeader from "@/components/TheHeader.vue";
 
 import PokemonList from "@/components/PokemonList.vue";
 
-import { Filter } from "@/enums/Filters";
 import pokemonFilterService from "@/services/pokemonFilterService";
 import pokemonSpeciesService from "@/services/pokemonSpeciesService";
 import PokemonSpeciesData from "../classes/PokemonSpeciesData";
@@ -47,10 +47,6 @@ Component.registerHooks(["beforeRouteEnter", "beforeRouteUpdate"]);
     }
 })
 export default class Home extends Vue {
-    filters = new Array<{
-        filter: Filter;
-        options: Array<string>;
-    }>();
 
     pokemonSpeciesList = new Array<string>();
     page = {
@@ -59,23 +55,19 @@ export default class Home extends Vue {
     };
 
     search = "";
+    activeFilters = new Map<string, Set<string>>();
 
-    async beforeRouteUpdate(to: Route, from: Route, next: Next<Home>) {
-        console.log(this.$route);
-        next();
-    }
-
-    async loadPokemonSpeciesList(search?: string): Promise<Array<string>> {
-        const filters = pokemonFilterService.getActiveFilters(this.$route);
+    async loadPokemonSpeciesList(): Promise<Array<string>> {
         let pokemonSpeciesMap = new Map<string, string>();
         pokemonSpeciesMap =
-            filters.length > 0
-                ? await pokemonFilterService.getFiltersIntersection({ filters })
+            this.activeFilters.size > 0
+                ? await pokemonFilterService.getFiltersIntersection({ filters: this.activeFilters })
                 : await pokemonSpeciesService.getMap();
-        if (search)
+        if (this.search)
             pokemonSpeciesMap.forEach((value, key) => {
-                if (!key.includes(search)) pokemonSpeciesMap.delete(key);
+                if (!key.includes(this.search)) pokemonSpeciesMap.delete(key);
             });
+        console.log('test');
         return [...pokemonSpeciesMap.values()];
     }
 
@@ -86,8 +78,8 @@ export default class Home extends Vue {
         if (this.page.offset < 0) this.page.offset = 0;
     }
 
-    async reload(search?: string) {
-        this.pokemonSpeciesList = await this.loadPokemonSpeciesList(search);
+    async reload() {
+        this.pokemonSpeciesList = await this.loadPokemonSpeciesList();
         this.calculateOffset();
     }
 
@@ -95,10 +87,6 @@ export default class Home extends Vue {
         this.reload();
     }
 
-    @Watch("search")
-    async onPropertyChange(value: string) {
-        this.reload(value);
-    }
 }
 </script>
 
