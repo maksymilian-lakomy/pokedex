@@ -1,7 +1,11 @@
 <template>
     <div class="pokemon-card" @mouseenter="active = true" @mouseleave="active = false">
         <div class="pokemon-card__portrait">
-            <img class="pokemon-card__portrait__img pokemon-card__portrait__img--placeholder"
+            <transition name="slide">
+                <div class="pokemon-card__portrait__additional-info" v-show="active">{{pokemonSpecies.varieties.length}}</div>
+            </transition>
+            <img
+                class="pokemon-card__portrait__img pokemon-card__portrait__img--placeholder"
                 src="@/assets/pokemon-placeholder.png"
                 v-if="!portrait.loaded"
             />
@@ -34,7 +38,7 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 
-import PokemonSpeciesData from '@/classes/PokemonSpeciesData';
+import PokemonSpeciesData from "@/classes/PokemonSpeciesData";
 
 @Component({
     props: {
@@ -59,7 +63,7 @@ export default class PokemonCard extends Vue {
     active = false;
     portrait = {
         loaded: false
-    }
+    };
 
     onLoaded() {
         this.portrait.loaded = true;
@@ -72,11 +76,16 @@ export default class PokemonCard extends Vue {
     }
 
     get pokemonData() {
-        return this.$props.pokemonSpecies.varieties[this.$props.variety].pokemonFull;
+        return this.$props.pokemonSpecies.varieties[this.$props.variety]
+            .pokemonFull;
     }
 
     get filterPortrait() {
-        return ['generation-vii', 'generation-viii'].indexOf(this.$props.pokemonSpecies.generation.name) !== -1;
+        return (
+            ["generation-vii", "generation-viii"].indexOf(
+                this.$props.pokemonSpecies.generation.name
+            ) !== -1
+        );
     }
 
     get tags() {
@@ -90,10 +99,22 @@ export default class PokemonCard extends Vue {
 .pokemon-card
 
     &__portrait
+        position: relative
         max-width: 100%
         max-height: 100%
         background-color: #E9E9E9
         border-radius: 1em
+        overflow: hidden
+
+        &__additional-info
+            z-index: 1
+            font-weight: bolder
+            position: absolute
+            top: 0
+            right: 0
+            padding: .5em .75em
+            color: #707070
+
         &__img
             transition-duration: .25s
             opacity: .75
@@ -101,7 +122,7 @@ export default class PokemonCard extends Vue {
             height: 100%
             image-rendering: pixelated
         &__img--active
-            transform: translateY(-.25em)
+            transform: translateY(.5em)
             opacity: 1
         &__img--placeholder
             opacity: 0.25
@@ -122,7 +143,7 @@ export default class PokemonCard extends Vue {
                 margin-right: .75em
 
             &__name
-                font-size: 1
+                font-size: 1em
 
         &__tags
             display: flex
@@ -139,4 +160,12 @@ export default class PokemonCard extends Vue {
                 list-style: none
                 &:last-of-type
                     margin-right: unset
+
+.slide-enter-active, .slide-leave-active 
+    transition-duration: .25s
+    transform: translateY(0%)
+
+.slide-enter, .slide-leave-to
+    transform: translateY(-100%)
+
 </style>

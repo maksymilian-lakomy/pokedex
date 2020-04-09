@@ -89,7 +89,7 @@ export default class PokemonList extends Vue {
 <style lang="sass" scoped>
 .pokemon-list
     position: relative
-    margin: auto
+    justify-content: center
     display: grid
     grid-template-columns: repeat(5, 198px)
     column-gap: 2em
