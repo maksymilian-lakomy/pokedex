@@ -25,6 +25,7 @@ import pokemonSpeciesService from "@/services/pokemonSpeciesService";
 import PokemonSpeciesData from "@/classes/PokemonSpeciesData";
 
 import PokemonCard from "@/components/PokemonCard.vue";
+import Observer from "@/components/Observer.vue";
 
 @Component({
     props: {
@@ -42,7 +43,8 @@ import PokemonCard from "@/components/PokemonCard.vue";
         }
     },
     components: {
-        "v-pokemon-card": PokemonCard
+        "v-pokemon-card": PokemonCard,
+        "v-observer": Observer
     }
 })
 export default class PokemonList extends Vue {
