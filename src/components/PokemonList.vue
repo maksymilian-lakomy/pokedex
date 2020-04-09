@@ -19,6 +19,7 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
+import { Watch } from "vue-property-decorator";
 
 import pokemonSpeciesService from "@/services/pokemonSpeciesService";
 import PokemonSpeciesData from "@/classes/PokemonSpeciesData";
@@ -47,14 +48,21 @@ import PokemonCard from "@/components/PokemonCard.vue";
 export default class PokemonList extends Vue {
     pokemonSpecies = new Array<PokemonSpeciesData>();
 
-    async mounted() {
+    async created() {
+        await this.loadNextPokemons();
+    }   
+    
+    @Watch('pokemonSpeciesList')
+    async onPropertyChange() {
+        this.pokemonSpecies = [];
         this.loadNextPokemons();
     }
+
 
     async loadNextPokemons() {
         // if (this.page.loading) return;
         const startPosition = this.$props.offset + this.pokemonSpecies.length;
-        this.loadPage(startPosition, this.$props.limit);
+        await this.loadPage(startPosition, this.$props.limit);
     }
 
     async loadPreviousPokemons() {
@@ -66,7 +74,7 @@ export default class PokemonList extends Vue {
             limit += this.$props.offset;
             this.$emit('update:offset', 0);
         }
-        this.loadPage(this.$props.offset, limit);
+        await this.loadPage(this.$props.offset, limit);
     }
 
     async loadPage(startPosition: number, limit: number) {
@@ -89,7 +97,6 @@ export default class PokemonList extends Vue {
 <style lang="sass" scoped>
 .pokemon-list
     position: relative
-    justify-content: center
     display: grid
     grid-template-columns: repeat(5, 198px)
     column-gap: 2em
