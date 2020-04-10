@@ -3,7 +3,7 @@
         <v-header
             :search.sync="search"
             :activeFilters.sync="activeFilters"
-            @optionChange="setFilter($event)"
+            @option-change="setFilter($event)"
             @reset-filters="resetFilters()"
             @reload="reload()"
         />
@@ -11,6 +11,7 @@
             :pokemonSpeciesList="pokemonSpeciesList"
             :limit="page.limit"
             :offset="page.offset"
+            :pageAmount="pageAmount"
         />
         <v-pokemon-list
             :pokemonSpeciesList="pokemonSpeciesList"
@@ -18,10 +19,6 @@
             :offset.sync="page.offset"
         />
     </div>
-    <!-- <div>
-            <button v-for="page in pagesCount" :key="page">{{page}}</button>
-    </div>-->
-    <!-- <input type="text" v-model="search" /> -->
 </template>
 
 <script lang="ts">
@@ -42,8 +39,8 @@ Component.registerHooks(["beforeRouteEnter", "beforeRouteUpdate"]);
 
 import { EventBus } from "@/events/EventBus";
 
-interface FilterEvent {
-    filter: string;
+interface OptionChangeEvent {
+    filterKey: string;
     option: string;
 }
 
@@ -77,10 +74,30 @@ export default class Home extends Vue {
         next();
     }
 
-    setFilter({ filter, option }: FilterEvent) {
-        const options = this.activeFilters[filter];
+    get pageAmount() {
+        if (this.pokemonSpeciesList.length === 0) return 0;
+        return (
+            Math.floor(this.pokemonSpeciesList.length / this.page.limit) +
+            (this.pokemonSpeciesList.length % this.page.limit !== 0 ? 1 : 0)
+        );
+    }
+
+    get overRange() {
+        if (+this.$route.params.page > this.pageAmount)
+            return true;
+        return false;
+    }
+
+    get underRange() {
+        if (+this.$route.params.page <= 0)
+            return true;
+        return false;
+    }
+
+    setFilter({ filterKey, option }: OptionChangeEvent) {
+        const options = this.activeFilters[filterKey];
         if (!options) {
-            this.$set(this.activeFilters, filter, [option]);
+            this.$set(this.activeFilters, filterKey, [option]);
         } else {
             const index = options.indexOf(option);
             index !== -1 ? options.splice(index, 1) : options.push(option);
@@ -127,6 +144,10 @@ export default class Home extends Vue {
         window.scrollTo(0, 0);
         EventBus.$emit("loading-species-list", true);
         this.pokemonSpeciesList = await this.loadPokemonSpeciesList();
+        if (this.overRange)
+            this.$router.push({ params: { page: this.pageAmount.toString() } });
+        else if (this.underRange)
+            this.$router.push({params: {page: '1'}});
         this.calculateOffset();
         EventBus.$emit("loading-species-list", false);
     }
