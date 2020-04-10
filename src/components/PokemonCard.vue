@@ -2,13 +2,19 @@
     <div class="pokemon-card" @mouseenter="active = true" @mouseleave="active = false">
         <div class="pokemon-card__portrait">
             <transition name="slide">
-                <div class="pokemon-card__portrait__additional-info" v-show="active">{{pokemonSpecies.varieties.length}}</div>
+                <div
+                    class="pokemon-card__portrait__additional-info"
+                    v-show="active"
+                >{{pokemonSpecies.varieties.length}}</div>
             </transition>
-            <img
-                class="pokemon-card__portrait__img pokemon-card__portrait__img--placeholder"
-                src="@/assets/pokemon-placeholder.png"
-                v-if="!portrait.loaded"
-            />
+            <div>
+                <img
+                    class="pokemon-card__portrait__img pokemon-card__portrait__img--placeholder"
+                    src="@/assets/pokemon-placeholder.png"
+                    v-if="!portrait.loaded"
+                />
+                <span class = "pokemon-card__portrait__img--placeholder__message" v-if="!pokemonData.sprites.frontDefault">No image</span>
+            </div>
             <img
                 class="pokemon-card__portrait__img"
                 :class="{'pokemon-card__portrait__img--active': active,
@@ -125,7 +131,18 @@ export default class PokemonCard extends Vue {
             transform: translateY(.5em)
             opacity: 1
         &__img--placeholder
-            opacity: 0.25
+            opacity: 0.1
+            position: relative
+            &__message
+                position: absolute
+                width: 100%
+                text-align: center
+                left: 0
+                color: #707070
+                font-weight: bold
+                top: 50%
+                font-size: 2em
+                transform: translateY(-50%)
         &__img--filter
             image-rendering: auto !important
 
