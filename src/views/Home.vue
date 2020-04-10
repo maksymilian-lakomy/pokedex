@@ -124,6 +124,7 @@ export default class Home extends Vue {
     }
 
     async reload() {
+        window.scrollTo(0, 0);
         EventBus.$emit("loading-species-list", true);
         this.pokemonSpeciesList = await this.loadPokemonSpeciesList();
         this.calculateOffset();
