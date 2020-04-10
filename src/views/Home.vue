@@ -1,20 +1,18 @@
 <template>
     <div class="home">
         <v-header
-            class="home__header"
             :search.sync="search"
             :activeFilters.sync="activeFilters"
             @optionChange="setFilter($event)"
+            @reset-filters="resetFilters()"
             @reload="reload()"
         />
         <v-pagination
             :pokemonSpeciesList="pokemonSpeciesList"
-            class="home__pagination"
             :limit="page.limit"
             :offset="page.offset"
         />
         <v-pokemon-list
-            class="home__listing"
             :pokemonSpeciesList="pokemonSpeciesList"
             :limit="page.limit"
             :offset.sync="page.offset"
@@ -29,7 +27,6 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import { Watch } from "vue-property-decorator";
 import { Route, Next } from "vue-router";
 
 import TheHeader from "@/components/TheHeader.vue";
@@ -91,6 +88,11 @@ export default class Home extends Vue {
         this.reload();
     }
 
+    resetFilters() {
+        this.activeFilters = {};
+        this.reload();
+    }
+
     activeOptionsCheck(): boolean {
         for (const options in this.activeFilters)
             if (this.activeFilters[options].length > 0) return true;
@@ -136,16 +138,13 @@ export default class Home extends Vue {
 
 <style lang="sass" scoped>
 .home
-    display: grid
-    grid-template-columns: 1fr 4em max-content 1fr
-    grid-template-areas: ". . header ." ". pagination listing ."
-
-    &__header
-        grid-area: header
-
-    &__pagination
-        grid-area: pagination
-
-    &__listing
-        grid-area: listing
+    display: flex
+    position: relative
+    flex-direction: column
+    margin: auto
+    width: 75%
+    @media (max-width: 768px)
+        width: 90%                
+    @media (max-width: 350px)
+        width: 100%
 </style>

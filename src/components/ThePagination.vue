@@ -1,31 +1,31 @@
 <template>
-    <div class="pagination">
-        <ol class="pagination__list">
-            <li class="pagination__list__element pagination__element__page-number" v-if="(pages[0] > 1)">
-                <button
-                    @click="goToPage(1)"
-                    class="pagination__list__element__button pagination__list__element__page-number"
-                >{{'1' | numeric}}</button>
-            </li>
-            <li class="pagination__list__element pagination__list__element__page-number" v-if="(pages[0] > 1)">. . .</li>
-            <li class="pagination__list__element" v-for="i in pages" :key="i">
-                <button
-                    @click="goToPage(i)"
-                    class="pagination__list__element__button pagination__list__element__page-number"
-                    :class="{'pagination__list__element__button--active': i === activePage}"
-                >{{i.toString() | numeric}}</button>
-            </li>
-            <li
-                class="pagination__list__element pagination__list__element__page-number"
-            >/ {{pageAmount.toString() | numeric}}</li>
-        </ol>
-    </div>
+    <ol class="list">
+        <li class="list__element pagination__element__page-number" v-if="(pages[0] > 1)">
+            <button
+                @click="goToPage(1)"
+                class="list__element__button list__element__page-number"
+            >{{'1' | numeric}}</button>
+        </li>
+        <li class="list__element list__element__page-number" v-if="(pages[0] > 1)">
+            . . .
+        </li>
+        <li class="list__element" v-for="i in pages" :key="i">
+            <button
+                @click="goToPage(i)"
+                class="list__element__button list__element__page-number"
+                :class="{'list__element__button--active': i === activePage}"
+            >{{i.toString() | numeric}}</button>
+        </li>
+        <li
+            class="list__element list__element__page-number list__element__page-number--count"
+        >/ {{pageAmount.toString() | numeric}}</li>
+    </ol>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
 import { Component, Prop } from "vue-property-decorator";
-import { EventBus } from "@/events/EventBus"
+import { EventBus } from "@/events/EventBus";
 
 @Component({
     filters: {
@@ -49,16 +49,25 @@ export default class ThePagination extends Vue {
     flags = {
         loadingSpeciesList: false,
         loadingSpecies: false
-    }
+    };
 
     created() {
-        EventBus.$on("loading-species-list", (event: boolean) => this.flags.loadingSpeciesList = event);
-        EventBus.$on("loading-species", (event: boolean) => this.flags.loadingSpecies = event);
+        EventBus.$on(
+            "loading-species-list",
+            (event: boolean) => (this.flags.loadingSpeciesList = event)
+        );
+        EventBus.$on(
+            "loading-species",
+            (event: boolean) => (this.flags.loadingSpecies = event)
+        );
     }
 
     get pageAmount() {
         if (this.pokemonSpeciesList.length === 0) return 0;
-        return Math.floor(this.pokemonSpeciesList.length / this.limit) + (this.pokemonSpeciesList.length % this.limit !== 0 ? 1 : 0);
+        return (
+            Math.floor(this.pokemonSpeciesList.length / this.limit) +
+            (this.pokemonSpeciesList.length % this.limit !== 0 ? 1 : 0)
+        );
     }
 
     get pages() {
@@ -79,8 +88,7 @@ export default class ThePagination extends Vue {
     }
 
     goToPage(page: number) {
-        if (this.flags.loadingSpeciesList || this.flags.loadingSpecies)
-            return;
+        if (this.flags.loadingSpeciesList || this.flags.loadingSpecies) return;
         this.$router.push({
             params: {
                 page: page.toString()
@@ -91,30 +99,34 @@ export default class ThePagination extends Vue {
 </script>
 
 <style lang="sass" scoped>
-.pagination
-    position: relative
-    &__list
-        padding: 0
-        margin: 0
-        margin-right: 1em
-        text-align: right
-        position: sticky
-        top: 1.5em
+.list
+    border-bottom: 1px solid #E9E9E9
+    padding: 1em 0
+    font-size: .8em
+    margin: 0
+    margin-bottom: 1em
+    position: sticky
+    background-color: white
+    top: 0
+    display: flex
+    z-index: 999999
 
-        &__element
-            list-style: none
-            margin-bottom: .5em
+    &__element
+        list-style: none
+        padding: 0 .25em
 
-            &__button
-                outline: none
-                border: unset
-                background-color: unset
-                opacity: .5
-            &__button--active
-                opacity: 1
-            &__page-number
-                font-family: inherit
-                font-size: 1em
-                color: #707070
+        &__button
+            cursor: pointer
+            outline: none
+            border: unset
+            background-color: unset
+            opacity: .5
+        &__button--active
+            opacity: 1
+        &__page-number
+            font-family: inherit
+            font-weight: bolder
+            font-size: 1em
+            color: #707070
 
 </style>

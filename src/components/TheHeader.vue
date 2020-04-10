@@ -7,9 +7,15 @@
                 @keyup="onSearchEnter($event, $event.target.value)"
                 :value="search"
             />
-            <button class="header__nav__button" @click="displayFilter('color')">Colors</button>
-            <button class="header__nav__button" @click="displayFilter('habitat')">Habitats</button>
-            <button class="header__nav__button" @click="displayFilter('shape')">Shapes</button>
+            <div class="header__nav__buttons">
+                <button class="header__nav__buttons__button" @click="displayFilter('color')">Colors</button>
+                <button
+                    class="header__nav__buttons__button"
+                    @click="displayFilter('habitat')"
+                >Habitats</button>
+                <button class="header__nav__buttons__button" @click="displayFilter('shape')">Shapes</button>
+                <button v-show="activeOptionsCheck" class="header__nav__buttons__button header__nav__buttons__button--right" @click="resetFilters()">Clear</button>
+            </div>
         </nav>
         <transition name="filters">
             <div v-if="filter !== null" class="filter-panel">
@@ -79,10 +85,25 @@ export default class TheHeader extends Vue {
             : (this.filter = filterIndex);
     }
 
+    get activeOptionsCheck(): boolean {
+        for (const options in this.activeFilters)
+            if (this.activeFilters[options].length > 0) return true;
+        return false;
+    }
+
     setFilter(filter: string, option: string) {
-        if (this.flags.loadingSpeciesList || this.flags.loadingSpecies)
-            return;
+        if (this.flags.loadingSpeciesList || this.flags.loadingSpecies) return;
         this.$emit("optionChange", { filter, option });
+    }
+
+    resetFilters() {
+        if (
+            this.flags.loadingSpeciesList ||
+            this.flags.loadingSpeciesList ||
+            !this.activeOptionsCheck
+        )
+            return;
+        this.$emit("reset-filters");
     }
 
     async loadOptions() {
@@ -106,8 +127,7 @@ export default class TheHeader extends Vue {
 
     onSearchEnter(event: KeyboardEvent, search: string) {
         if (event.keyCode !== 13) return;
-        if (this.flags.loadingSpeciesList || this.flags.loadingSpecies)
-            return;
+        if (this.flags.loadingSpeciesList || this.flags.loadingSpecies) return;
         this.$emit("update:search", search);
         this.$emit("reload");
     }
@@ -116,7 +136,7 @@ export default class TheHeader extends Vue {
 
 <style lang="sass" scoped>
 .header
-    margin-bottom: 1em
+    max-width: 100%
     &__nav
         &__search
             outline: none
@@ -128,29 +148,45 @@ export default class TheHeader extends Vue {
             color: #707070
             font-family: inherit
             margin-right: 1em
-        &__button
-            cursor: pointer
-            outline: none
-            padding: .625em
-            border: unset
-            background-color: unset
-            font-family: inherit
-            color: #707070
-        &__button:nth-child(n)
-            margin-right: 1em
-        &__button:nth-last-child(1)
-            margin-right: unset
+        &__buttons
+            display: inline-block
+            @media (max-width: 768px)
+                display: block
+            &__button
+                font-size: inherit
+                cursor: pointer
+                outline: none
+                padding: .625em
+                border: unset
+                background-color: unset
+                font-family: inherit
+                color: #707070
+            &__button:nth-child(n)
+                margin-right: 1em
+                @media (max-width: 768px)
+                    margin-right: .25em
+                @media (max-width: 350px)
+                    padding: .625em .25em
+            &__button:nth-last-child(1)
+                margin-right: unset
+            &__button--right
+                float: right
 
 .filter-panel
-    padding-top: 1em
+    padding: 1em 0
     &__list
         margin: 0
         padding: 0
+        width: 100%
+        display: flex
+        overflow-x: auto
+        font-size: .8em
         &__element
             display: inline-block
             list-style: none
             margin-right: .5em
             &__button
+                font-size: inherit
                 outline: none
                 cursor: pointer
                 border: unset
@@ -168,10 +204,10 @@ export default class TheHeader extends Vue {
 .filters-enter-active, .filters-leave-active 
     transition-duration: .25s
     max-height: 5em
-    padding-top: 1em
+    padding: 1em 0
 
 .filters-enter, .filters-leave-to
     opacity: 0
     max-height: 0em
-    padding-top: 0em
+    padding: 0em 0
 </style>

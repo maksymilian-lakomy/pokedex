@@ -2,6 +2,7 @@
     <div class="pokemon-list">
         <div class="pokemon-list__loading" v-show="allFlagsFalse"/>
         <v-pokemon-card
+            class="pokemon-list__card"
             v-for="pokemon in pokemonSpeciesSorted"
             :key="pokemon.id"
             :pokemonSpecies="pokemon"
@@ -126,19 +127,35 @@ export default class PokemonList extends Vue {
 <style lang="sass" scoped>
 .pokemon-list
     position: relative
-    display: grid
-    grid-template-columns: repeat(5, 198px)
-    column-gap: 2em
-    row-gap: 1.25em
-    @media (max-width: 1440px)
-        grid-template-columns: repeat(4, 198px)
+    margin: auto
+    text-align: center
+    // display: grid
+    // grid-template-columns: repeat(6, 198px)
+    // column-gap: 2em
+    // row-gap: 1.25em
+    // justify-content: center
+    // @media (max-width: 1440px)
+    //     grid-template-columns: repeat(5, 198px)
 
-    @media (max-width: 640px)
-        grid-template-columns: repeat(2, 198px)
+    // @media (max-width: 1240px)
+    //     grid-template-columns: repeat(4, 198px)
 
-    @media (max-width: 360px)
-        grid-template-columns: 288px
+    // @media (max-width: 940px)
+    //     grid-template-columns: repeat(3, 198px)
+        
+    // @media (max-width: 740px)
+    //     grid-template-columns: repeat(2, 198px)
 
+    // @media (max-width: 500px)
+    //     grid-template-columns: 288px
+
+    &__card
+        display: inline-block
+        width: 198px
+        margin: .625em 1em
+        @media (max-width: 768px)
+            width: 288px
+            
     &__loading
         position: absolute
         width: 100%
