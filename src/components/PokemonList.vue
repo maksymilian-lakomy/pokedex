@@ -1,18 +1,11 @@
 <template>
     <div class="pokemon-list">
-        <!-- <v-observer v-if="pokemonSpecies.length > 0" @intersection="loadPreviousPokemons" style="top: 0" /> -->
         <v-pokemon-card
             v-for="pokemon in pokemonSpeciesSorted"
             :key="pokemon.id"
             :pokemonSpecies="pokemon"
             :variety="0"
         />
-        <!-- <div v-show="load">Wczytywanie</div> -->
-        <!-- <v-observer
-            v-if="pokemonSpecies.length > 0"
-            @intersection="loadNextPokemons"
-            style="bottom: 0"
-        /> -->
     </div>
 </template>
 
@@ -25,7 +18,6 @@ import pokemonSpeciesService from "@/services/pokemonSpeciesService";
 import PokemonSpeciesData from "@/classes/PokemonSpeciesData";
 
 import PokemonCard from "@/components/PokemonCard.vue";
-import Observer from "@/components/Observer.vue";
 
 import { EventBus } from "@/events/EventBus";
 
@@ -45,8 +37,7 @@ import { EventBus } from "@/events/EventBus";
         }
     },
     components: {
-        "v-pokemon-card": PokemonCard,
-        "v-observer": Observer
+        "v-pokemon-card": PokemonCard
     }
 })
 export default class PokemonList extends Vue {
