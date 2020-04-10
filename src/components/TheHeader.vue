@@ -1,5 +1,5 @@
 <template>
-    <header>
+    <header class="header">
         <nav class="header__nav">
             <input
                 class="header__nav__search"
@@ -116,6 +116,7 @@ export default class TheHeader extends Vue {
 
 <style lang="sass" scoped>
 .header
+    margin-bottom: 1em
     &__nav
         &__search
             outline: none
@@ -141,7 +142,7 @@ export default class TheHeader extends Vue {
             margin-right: unset
 
 .filter-panel
-    padding: 1em 0
+    padding-top: 1em
     &__list
         margin: 0
         padding: 0
@@ -167,10 +168,10 @@ export default class TheHeader extends Vue {
 .filters-enter-active, .filters-leave-active 
     transition-duration: .25s
     max-height: 5em
-    padding: 1em 0
+    padding-top: 1em
 
 .filters-enter, .filters-leave-to
     opacity: 0
     max-height: 0em
-    padding: 0em 0
+    padding-top: 0em
 </style>
