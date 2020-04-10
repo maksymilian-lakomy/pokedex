@@ -1,5 +1,6 @@
 <template>
     <div class="pokemon-list">
+        <div class="pokemon-list__loading" v-show="allFlagsFalse"/>
         <v-pokemon-card
             v-for="pokemon in pokemonSpeciesSorted"
             :key="pokemon.id"
@@ -42,37 +43,66 @@ import { EventBus } from "@/events/EventBus";
 })
 export default class PokemonList extends Vue {
     pokemonSpecies = new Array<PokemonSpeciesData>();
+    flags = {
+        loadingSpeciesList: false,
+        loadingSpecies: false
+    };
 
     get pokemonSpeciesSorted() {
-        return this.pokemonSpecies.sort((a: PokemonSpeciesData, b: PokemonSpeciesData) => a.id - b.id);
+        return this.pokemonSpecies.sort(
+            (a: PokemonSpeciesData, b: PokemonSpeciesData) => a.id - b.id
+        );
+    }
+
+    get allFlagsFalse() {
+        return this.flags.loadingSpeciesList || this.flags.loadingSpecies;
     }
 
     async created() {
-        this.pokemonSpecies = await this.loadPage(this.$props.offset, this.$props.limit);
-    }   
-    
-    @Watch('pokemonSpeciesList')
-    async onPokemonSpeciesListChange() {
-        this.pokemonSpecies = await this.loadPage(this.$props.offset, this.$props.limit);
+        EventBus.$on(
+            "loading-species-list",
+            (event: boolean) => (this.flags.loadingSpeciesList = event)
+        );
+        EventBus.$on(
+            "loading-species",
+            (event: boolean) => (this.flags.loadingSpecies = event)
+        );
+        this.pokemonSpecies = await this.loadPage(
+            this.$props.offset,
+            this.$props.limit
+        );
     }
 
+    @Watch("pokemonSpeciesList")
+    async onPokemonSpeciesListChange() {
+        this.pokemonSpecies = await this.loadPage(
+            this.$props.offset,
+            this.$props.limit
+        );
+    }
 
     async loadNextPokemons() {
         // if (this.page.loading) return;
         const startPosition = this.$props.offset + this.pokemonSpecies.length;
-        this.pokemonSpecies = [...this.pokemonSpecies, ...await this.loadPage(startPosition, this.$props.limit)];
+        this.pokemonSpecies = [
+            ...this.pokemonSpecies,
+            ...(await this.loadPage(startPosition, this.$props.limit))
+        ];
     }
 
     async loadPreviousPokemons() {
         // if (this.page.loading) return;
         let limit = this.$props.limit;
         const offset = this.$props.offset;
-        this.$emit('update:offset', offset - limit);
+        this.$emit("update:offset", offset - limit);
         if (offset < 0) {
             limit += this.$props.offset;
-            this.$emit('update:offset', 0);
+            this.$emit("update:offset", 0);
         }
-        this.pokemonSpecies = [...this.pokemonSpecies, ...await this.loadPage(this.$props.offset, limit)];
+        this.pokemonSpecies = [
+            ...this.pokemonSpecies,
+            ...(await this.loadPage(this.$props.offset, limit))
+        ];
     }
 
     async loadPage(startPosition: number, limit: number) {
@@ -100,4 +130,38 @@ export default class PokemonList extends Vue {
     grid-template-columns: repeat(5, 198px)
     column-gap: 2em
     row-gap: 1.25em
+    @media (max-width: 1440px)
+        grid-template-columns: repeat(4, 198px)
+
+    @media (max-width: 640px)
+        grid-template-columns: repeat(2, 198px)
+
+    @media (max-width: 360px)
+        grid-template-columns: 288px
+
+    &__loading
+        position: absolute
+        width: 100%
+        height: 100%
+        background-color: #ffffffbb
+        z-index: 99999
+        &:before
+            content: ""
+            animation-name: loading-circle
+            animation-duration: 1s
+            animation-iteration-count: infinite
+            animation-timing-function: linear
+            position: fixed
+            width: 3em
+            height: 3em
+            top: 50%
+            background-image: url("../assets/loading-circle.png")
+            left: calc(50% - 3em / 2)
+
+@keyframes loading-circle
+    0% 
+        transform: rotate(0deg)
+
+    100%
+        transform: rotate(360deg)
 </style>
