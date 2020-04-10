@@ -4,7 +4,7 @@
             <input
                 class="header__nav__search"
                 placeholder="Search"
-                @keyup="onEnter($event, $event.target.value)"
+                @keyup="onSearchEnter($event, $event.target.value)"
                 :value="search"
             />
             <button class="header__nav__button" @click="displayFilter('color')">Colors</button>
@@ -39,18 +39,24 @@ import { Prop } from "vue-property-decorator";
 import { filters } from "@/enums/Filters";
 import pokemonFilterService from "../services/pokemonFilterService";
 
+import { EventBus } from "@/events/EventBus";
+
 @Component({
     filters: {
         upperCase(value: string) {
-            if (typeof value !== 'string')
-                return;
-            return value.charAt(0).toUpperCase()+value.slice(1);
+            if (typeof value !== "string") return;
+            return value.charAt(0).toUpperCase() + value.slice(1);
         }
     }
 })
 export default class TheHeader extends Vue {
     filters: Record<string, Array<string>> = {};
     filter: string | null = null;
+
+    flags = {
+        loadingSpeciesList: false,
+        loadingSpecies: false
+    };
 
     @Prop(String)
     readonly search!: string;
@@ -74,19 +80,34 @@ export default class TheHeader extends Vue {
     }
 
     setFilter(filter: string, option: string) {
+        if (this.flags.loadingSpeciesList || this.flags.loadingSpecies)
+            return;
         this.$emit("optionChange", { filter, option });
     }
 
-    async created() {
-        for (const filter of filters) {
+    async loadOptions() {
+        for await (const filter of filters)
             this.filters[filter] = await pokemonFilterService.getOptions({
                 filter
             });
-        }
     }
 
-    onEnter(event: KeyboardEvent, search: string) {
+    async created() {
+        EventBus.$on(
+            "loading-species-list",
+            (event: boolean) => (this.flags.loadingSpeciesList = event)
+        );
+        EventBus.$on(
+            "loading-species",
+            (event: boolean) => (this.flags.loadingSpecies = event)
+        );
+        this.loadOptions();
+    }
+
+    onSearchEnter(event: KeyboardEvent, search: string) {
         if (event.keyCode !== 13) return;
+        if (this.flags.loadingSpeciesList || this.flags.loadingSpecies)
+            return;
         this.$emit("update:search", search);
         this.$emit("reload");
     }
@@ -145,10 +166,11 @@ export default class TheHeader extends Vue {
 
 .filters-enter-active, .filters-leave-active 
     transition-duration: .25s
-    opacity: 1
+    max-height: 5em
     padding: 1em 0
 
 .filters-enter, .filters-leave-to
     opacity: 0
-    padding: 0 0
+    max-height: 0em
+    padding: 0em 0
 </style>

@@ -8,7 +8,6 @@
             @reload="reload()"
         />
         <v-pagination
-            v-if="pokemonSpeciesList.length > 0"
             :pokemonSpeciesList="pokemonSpeciesList"
             class="home__pagination"
             :limit="page.limit"
@@ -44,6 +43,8 @@ import PokemonSpeciesData from "../classes/PokemonSpeciesData";
 
 Component.registerHooks(["beforeRouteEnter", "beforeRouteUpdate"]);
 
+import { EventBus } from "@/events/EventBus";
+
 interface FilterEvent {
     filter: string;
     option: string;
@@ -75,7 +76,6 @@ export default class Home extends Vue {
     activeFilters: Record<string, Array<string>> = {};
 
     beforeRouteUpdate(to: Route, from: Route, next: Next<Home>) {
-        this.calculateOffset();
         this.reload();
         next();
     }
@@ -122,8 +122,10 @@ export default class Home extends Vue {
     }
 
     async reload() {
+        EventBus.$emit("loading-species-list", true);
         this.pokemonSpeciesList = await this.loadPokemonSpeciesList();
         this.calculateOffset();
+        EventBus.$emit("loading-species-list", false);
     }
 
     async created() {

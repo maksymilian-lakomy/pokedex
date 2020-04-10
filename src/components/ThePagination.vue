@@ -23,6 +23,7 @@
 <script lang="ts">
 import Vue from "vue";
 import { Component, Prop } from "vue-property-decorator";
+import { EventBus } from "@/events/EventBus"
 
 @Component({
     filters: {
@@ -43,20 +44,30 @@ export default class ThePagination extends Vue {
     @Prop(Number)
     readonly limit!: number;
 
+    flags = {
+        loadingSpeciesList: false,
+        loadingSpecies: false
+    }
+
+    created() {
+        EventBus.$on("loading-species-list", (event: boolean) => this.flags.loadingSpeciesList = event);
+        EventBus.$on("loading-species", (event: boolean) => this.flags.loadingSpecies = event);
+    }
+
     get pageAmount() {
+        if (this.pokemonSpeciesList.length === 0) return 0;
         return Math.floor(this.pokemonSpeciesList.length / this.limit) + 1;
     }
 
     get pages() {
-        const pages = [];
+        const pages: Array<number> = [];
         let upperLimit = this.activePage + 2;
+        if (upperLimit - 5 < 0) upperLimit -= upperLimit - 5;
         if (upperLimit > this.pageAmount) upperLimit = this.pageAmount;
-        if (upperLimit - 4 <= 1) upperLimit -= upperLimit - 5;
-        while (pages.length < 4) {
+        while (pages.length < 5 && upperLimit > 0) {
             pages.unshift(upperLimit);
             upperLimit--;
         }
-        pages.unshift(upperLimit);
         return pages;
     }
 
@@ -66,6 +77,8 @@ export default class ThePagination extends Vue {
     }
 
     goToPage(page: number) {
+        if (this.flags.loadingSpeciesList || this.flags.loadingSpecies)
+            return;
         this.$router.push({
             params: {
                 page: page.toString()

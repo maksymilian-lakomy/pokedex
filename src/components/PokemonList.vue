@@ -27,6 +27,8 @@ import PokemonSpeciesData from "@/classes/PokemonSpeciesData";
 import PokemonCard from "@/components/PokemonCard.vue";
 import Observer from "@/components/Observer.vue";
 
+import { EventBus } from "@/events/EventBus";
+
 @Component({
     props: {
         pokemonSpeciesList: {
@@ -83,6 +85,7 @@ export default class PokemonList extends Vue {
     }
 
     async loadPage(startPosition: number, limit: number) {
+        EventBus.$emit("loading-species", true);
         const newPokemons = new Array<PokemonSpeciesData>();
         const condition = (i: number) =>
             i < startPosition + limit &&
@@ -93,6 +96,7 @@ export default class PokemonList extends Vue {
                     this.$props.pokemonSpeciesList[i]
                 )
             );
+        EventBus.$emit("loading-species", false);
         return newPokemons;
     }
 }
