@@ -1,23 +1,25 @@
 <template>
-    <ol class="pagination">
-        <li class="pagination__element pagination__element__page-number" v-if="(pages[0] > 1)">
-            <button
-                @click="goToPage(1)"
-                class="pagination__element__button pagination__element__page-number"
-            >{{'1' | numeric}}</button>
-        </li>
-        <li class="pagination__element pagination__element__page-number" v-if="(pages[0] > 1)">. . .</li>
-        <li class="pagination__element" v-for="i in pages" :key="i">
-            <button
-                @click="goToPage(i)"
-                class="pagination__element__button pagination__element__page-number"
-                :class="{'pagination__element__button--active': i === activePage}"
-            >{{i.toString() | numeric}}</button>
-        </li>
-        <li
-            class="pagination__element pagination__element__page-number"
-        >/ {{pageAmount.toString() | numeric}}</li>
-    </ol>
+    <div class="pagination">
+        <ol class="pagination__list">
+            <li class="pagination__list__element pagination__element__page-number" v-if="(pages[0] > 1)">
+                <button
+                    @click="goToPage(1)"
+                    class="pagination__list__element__button pagination__list__element__page-number"
+                >{{'1' | numeric}}</button>
+            </li>
+            <li class="pagination__list__element pagination__list__element__page-number" v-if="(pages[0] > 1)">. . .</li>
+            <li class="pagination__list__element" v-for="i in pages" :key="i">
+                <button
+                    @click="goToPage(i)"
+                    class="pagination__list__element__button pagination__list__element__page-number"
+                    :class="{'pagination__list__element__button--active': i === activePage}"
+                >{{i.toString() | numeric}}</button>
+            </li>
+            <li
+                class="pagination__list__element pagination__list__element__page-number"
+            >/ {{pageAmount.toString() | numeric}}</li>
+        </ol>
+    </div>
 </template>
 
 <script lang="ts">
@@ -56,7 +58,7 @@ export default class ThePagination extends Vue {
 
     get pageAmount() {
         if (this.pokemonSpeciesList.length === 0) return 0;
-        return Math.floor(this.pokemonSpeciesList.length / this.limit) + 1;
+        return Math.floor(this.pokemonSpeciesList.length / this.limit) + (this.pokemonSpeciesList.length % this.limit !== 0 ? 1 : 0);
     }
 
     get pages() {
@@ -90,25 +92,29 @@ export default class ThePagination extends Vue {
 
 <style lang="sass" scoped>
 .pagination
-    padding: 0
-    margin: 0
-    margin-right: 1em
-    text-align: right
+    position: relative
+    &__list
+        padding: 0
+        margin: 0
+        margin-right: 1em
+        text-align: right
+        position: sticky
+        top: 1.5em
 
-    &__element
-        list-style: none
-        margin-bottom: .5em
+        &__element
+            list-style: none
+            margin-bottom: .5em
 
-        &__button
-            outline: none
-            border: unset
-            background-color: unset
-            opacity: .5
-        &__button--active
-            opacity: 1
-        &__page-number
-            font-family: inherit
-            font-size: 1em
-            color: #707070
+            &__button
+                outline: none
+                border: unset
+                background-color: unset
+                opacity: .5
+            &__button--active
+                opacity: 1
+            &__page-number
+                font-family: inherit
+                font-size: 1em
+                color: #707070
 
 </style>
