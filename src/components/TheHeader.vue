@@ -2,12 +2,16 @@
     <header class="header">
         <h1>Pokedex</h1>
         <nav class="header__nav">
-            <v-navigation-search :search="search" />
-            <v-navigation-filters @click="setActiveFilterKey($event)" />
+            <v-navigation-search @search="$emit('search', $event)" />
+            <v-navigation-filters
+                @display-filter="setActiveFilterKey($event)"
+                @reset-filters="resetFilters()"
+                :activeOptions="activeOptionsCheck()"
+            />
         </nav>
         <transition name="filter-options">
             <v-navigation-filter-options
-                v-show="filterKey !== null"
+                v-if="filterKey !== null"
                 :options="filtersList[filterKey]"
                 :activeOptions="activeFilters[filterKey]"
                 :filterKey="filterKey"
@@ -43,9 +47,6 @@ interface OptionChangeEvent {
     }
 })
 export default class TheHeader extends mixins(AsyncFlags) {
-    @Prop(String)
-    readonly search!: string;
-
     @Prop(Object)
     readonly activeFilters!: Record<string, Array<string>>;
 
@@ -56,10 +57,11 @@ export default class TheHeader extends mixins(AsyncFlags) {
         this.filterKey = filterKey === this.filterKey ? null : filterKey;
     }
 
-    get activeOptionsCheck(): boolean {
-        for (const options in this.activeFilters)
-            if (this.activeFilters[options].length > 0) return true;
-        return false;
+    activeOptionsCheck(): Set<string> {
+        const activeFilters = new Set<string>();
+        for (const filterKey in this.activeFilters)
+            if (this.activeFilters[filterKey].length > 0) activeFilters.add(filterKey);
+        return activeFilters;
     }
 
     setActiveOption(event: OptionChangeEvent) {
@@ -91,11 +93,10 @@ export default class TheHeader extends mixins(AsyncFlags) {
 
 .filter-options-enter-active, .filter-options-leave-active 
     transition-duration: .25s
-    max-height: 5em
-    padding-top: 1em
+    max-height: 3em
+    opacity: 1
 
 .filter-options-enter, .filter-options-leave-to
     opacity: 0
     max-height: 0em
-    padding-top: 0em
 </style>

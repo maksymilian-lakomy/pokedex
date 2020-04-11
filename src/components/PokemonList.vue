@@ -1,7 +1,8 @@
 <template>
     <div class="pokemon-list">
         <div class="pokemon-list__loading" v-show="allFlagsFalse" />
-        <ol class="pokemon-list__listing">
+        <div v-if="!allFlagsFalse && (pokemonSpecies.length === 0 )">No pokemons found.</div>
+        <ol class="pokemon-list__listing" v-else>
             <v-pokemon-card
                 class="pokemon-list__listing__card"
                 v-for="pokemon in pokemonSpeciesSorted"
@@ -16,7 +17,7 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import { Watch } from "vue-property-decorator";
+import { Watch, Prop } from "vue-property-decorator";
 
 import pokemonSpeciesService from "@/services/pokemonSpeciesService";
 import PokemonSpeciesData from "@/classes/PokemonSpeciesData";
@@ -26,25 +27,20 @@ import PokemonCard from "@/components/PokemonCard.vue";
 import { EventBus } from "@/events/EventBus";
 
 @Component({
-    props: {
-        pokemonSpeciesList: {
-            type: Array,
-            required: true
-        },
-        limit: {
-            type: Number,
-            required: true
-        },
-        offset: {
-            type: Number,
-            required: true
-        }
-    },
     components: {
         "v-pokemon-card": PokemonCard
     }
 })
 export default class PokemonList extends Vue {
+    @Prop(Array)
+    readonly pokemonSpeciesList!: Array<string>;
+
+    @Prop(Number)
+    readonly limit!: number;
+
+    @Prop(Number)
+    readonly offset!: number;
+
     pokemonSpecies = new Array<PokemonSpeciesData>();
     flags = {
         loadingSpeciesList: false,
@@ -71,9 +67,14 @@ export default class PokemonList extends Vue {
             (event: boolean) => (this.flags.loadingSpecies = event)
         );
         this.pokemonSpecies = await this.loadPage(
-            this.$props.offset,
-            this.$props.limit
+            this.offset,
+            this.limit
         );
+    }
+
+    @Watch("offset")
+    async onPageChange() {
+        this.pokemonSpecies = await this.loadPage(this.offset, this.limit);
     }
 
     @Watch("pokemonSpeciesList")
@@ -84,42 +85,20 @@ export default class PokemonList extends Vue {
         );
     }
 
-    async loadNextPokemons() {
-        // if (this.page.loading) return;
-        const startPosition = this.$props.offset + this.pokemonSpecies.length;
-        this.pokemonSpecies = [
-            ...this.pokemonSpecies,
-            ...(await this.loadPage(startPosition, this.$props.limit))
-        ];
-    }
-
-    async loadPreviousPokemons() {
-        // if (this.page.loading) return;
-        let limit = this.$props.limit;
-        const offset = this.$props.offset;
-        this.$emit("update:offset", offset - limit);
-        if (offset < 0) {
-            limit += this.$props.offset;
-            this.$emit("update:offset", 0);
-        }
-        this.pokemonSpecies = [
-            ...this.pokemonSpecies,
-            ...(await this.loadPage(this.$props.offset, limit))
-        ];
-    }
-
     async loadPage(startPosition: number, limit: number) {
         EventBus.$emit("loading-species", true);
         const newPokemons = new Array<PokemonSpeciesData>();
         const condition = (i: number) =>
             i < startPosition + limit &&
             i < this.$props.pokemonSpeciesList.length;
-        for (let i = startPosition; condition(i); i++)
+        for (let i = startPosition; condition(i); i++) {
+            console.log('on', i);
             newPokemons.push(
                 await pokemonSpeciesService.getByUrl(
                     this.$props.pokemonSpeciesList[i]
                 )
             );
+        }
         EventBus.$emit("loading-species", false);
         return newPokemons;
     }

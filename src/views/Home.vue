@@ -1,16 +1,15 @@
 <template>
     <div class="home">
         <v-header
-            :search.sync="search"
             :activeFilters.sync="activeFilters"
             @option-change="setFilter($event)"
             @reset-filters="resetFilters()"
             @reload="reload()"
+            @search="setSearch($event)"
         />
         <v-pagination
-            :pokemonSpeciesList="pokemonSpeciesList"
-            :limit="page.limit"
-            :offset="page.offset"
+            :currentPage="page.currentPage"
+            @change-page="setPage($event)"
             :pageAmount="pageAmount"
         />
         <v-pokemon-list
@@ -38,6 +37,7 @@ import PokemonSpeciesData from "../classes/PokemonSpeciesData";
 Component.registerHooks(["beforeRouteEnter", "beforeRouteUpdate"]);
 
 import { EventBus } from "@/events/EventBus";
+import { Watch } from 'vue-property-decorator';
 
 interface OptionChangeEvent {
     filterKey: string;
@@ -61,6 +61,7 @@ interface OptionChangeEvent {
 export default class Home extends Vue {
     pokemonSpeciesList = new Array<string>();
     page = {
+        currentPage: 1,
         limit: 20,
         offset: 0
     };
@@ -69,12 +70,33 @@ export default class Home extends Vue {
 
     activeFilters: Record<string, Array<string>> = {};
 
-    beforeRouteUpdate(to: Route, from: Route, next: Next<Home>) {
-        this.reload();
-        next();
+    @Watch("pokemonSpeciesList")
+    onPokemonSpeciesListChange() {
+        this.setPage(this.page.currentPage);
     }
 
-    get pageAmount() {
+    setPage(page: number) {
+        const pageCheck = this.checkPageBoundary(page);
+        if (pageCheck === this.page.currentPage)
+            return;
+        this.page.currentPage = pageCheck;
+        this.calculateOffset();
+    }
+
+    calculateOffset() {
+        this.page.offset = (this.page.currentPage - 1) * this.page.limit;
+    }
+
+    checkPageBoundary(page: number) {
+        if (this.pokemonSpeciesList.length === 0)
+            return 1;
+        else if (page > this.pageAmount)
+            return this.pageAmount;
+        else
+            return page;
+    }
+
+    get pageAmount(): number {
         if (this.pokemonSpeciesList.length === 0) return 0;
         return (
             Math.floor(this.pokemonSpeciesList.length / this.page.limit) +
@@ -82,19 +104,12 @@ export default class Home extends Vue {
         );
     }
 
-    get overRange() {
-        if (+this.$route.params.page > this.pageAmount)
-            return true;
-        return false;
+    async setSearch(search: string) {
+        this.search = search;
+        await this.reload();
     }
 
-    get underRange() {
-        if (+this.$route.params.page <= 0)
-            return true;
-        return false;
-    }
-
-    setFilter({ filterKey, option }: OptionChangeEvent) {
+    async setFilter({ filterKey, option }: OptionChangeEvent) {
         const options = this.activeFilters[filterKey];
         if (!options) {
             this.$set(this.activeFilters, filterKey, [option]);
@@ -102,12 +117,12 @@ export default class Home extends Vue {
             const index = options.indexOf(option);
             index !== -1 ? options.splice(index, 1) : options.push(option);
         }
-        this.reload();
+        await this.reload();
     }
 
-    resetFilters() {
+    async resetFilters() {
         this.activeFilters = {};
-        this.reload();
+        await this.reload();
     }
 
     activeOptionsCheck(): boolean {
@@ -131,29 +146,16 @@ export default class Home extends Vue {
         return [...pokemonSpeciesMap.values()];
     }
 
-    async calculateOffset() {
-        this.page.offset = this.$route.params.page
-            ? (+this.$route.params.page - 1) * this.page.limit
-            : 0;
-        if (this.page.offset > this.pokemonSpeciesList.length)
-            this.page.offset = this.pokemonSpeciesList.length - this.page.limit;
-        if (this.page.offset < 0) this.page.offset = 0;
-    }
-
     async reload() {
         window.scrollTo(0, 0);
         EventBus.$emit("loading-species-list", true);
         this.pokemonSpeciesList = await this.loadPokemonSpeciesList();
-        if (this.overRange)
-            this.$router.push({ params: { page: this.pageAmount.toString() } });
-        else if (this.underRange)
-            this.$router.push({params: {page: '1'}});
-        this.calculateOffset();
+        console.log('after species');
         EventBus.$emit("loading-species-list", false);
     }
 
     async created() {
-        this.reload();
+        await this.reload();
     }
 }
 </script>

@@ -49,6 +49,7 @@ export default class NavigationFilterOptions extends Vue {
     width: 100%
     display: flex
     overflow-x: auto
+    overflow-y: hidden
     font-size: .8em
     &__element
         display: inline-block

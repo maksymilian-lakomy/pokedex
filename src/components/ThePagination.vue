@@ -13,7 +13,7 @@
             <button
                 @click="goToPage(i)"
                 class="list__element__button list__element__page-number"
-                :class="{'list__element__button--active': i === activePage}"
+                :class="{'list__element__button--active': i === currentPage}"
             >{{i.toString() | numeric}}</button>
         </li>
         <li
@@ -37,14 +37,11 @@ import { EventBus } from "@/events/EventBus";
     }
 })
 export default class ThePagination extends Vue {
-    @Prop(Array)
-    readonly pokemonSpeciesList!: Array<string>;
+    @Prop(Number)
+    readonly currentPage!: number;
 
     @Prop(Number)
-    readonly offset!: number;
-
-    @Prop(Number)
-    readonly limit!: number;
+    readonly pageAmount!: number;
 
     flags = {
         loadingSpeciesList: false,
@@ -62,17 +59,9 @@ export default class ThePagination extends Vue {
         );
     }
 
-    get pageAmount() {
-        if (this.pokemonSpeciesList.length === 0) return 0;
-        return (
-            Math.floor(this.pokemonSpeciesList.length / this.limit) +
-            (this.pokemonSpeciesList.length % this.limit !== 0 ? 1 : 0)
-        );
-    }
-
     get pages() {
         const pages: Array<number> = [];
-        let upperLimit = this.activePage + 2;
+        let upperLimit = this.currentPage + 2;
         if (upperLimit - 5 < 0) upperLimit -= upperLimit - 5;
         if (upperLimit > this.pageAmount) upperLimit = this.pageAmount;
         while (pages.length < 5 && upperLimit > 0) {
@@ -82,18 +71,9 @@ export default class ThePagination extends Vue {
         return pages;
     }
 
-    get activePage() {
-        if (this.$route.params.page) return +this.$route.params.page;
-        return 1;
-    }
-
     goToPage(page: number) {
         if (this.flags.loadingSpeciesList || this.flags.loadingSpecies) return;
-        this.$router.push({
-            params: {
-                page: page.toString()
-            }
-        });
+        this.$emit("change-page", page);
     }
 }
 </script>

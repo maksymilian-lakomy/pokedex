@@ -3,7 +3,6 @@
         class="nav__search"
         placeholder="Search"
         @keyup="onSearchEnter($event, $event.target.value)"
-        :value="search"
     />
 </template>
 
@@ -19,7 +18,7 @@ export default class NavigationSearch extends Vue {
 
     onSearchEnter(event: KeyboardEvent, search: string) {
         if (event.keyCode !== 13) return;
-        this.$emit("update:search", search);
+        this.$emit("search", search);
     }
 }
 </script>
