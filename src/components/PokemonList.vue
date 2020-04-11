@@ -90,9 +90,8 @@ export default class PokemonList extends Vue {
         const newPokemons = new Array<PokemonSpeciesData>();
         const condition = (i: number) =>
             i < startPosition + limit &&
-            i < this.$props.pokemonSpeciesList.length;
+            i < this.pokemonSpeciesList.length;
         for (let i = startPosition; condition(i); i++) {
-            console.log('on', i);
             newPokemons.push(
                 await pokemonSpeciesService.getByUrl(
                     this.$props.pokemonSpeciesList[i]

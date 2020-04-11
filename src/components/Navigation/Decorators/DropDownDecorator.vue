@@ -12,6 +12,10 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import {Prop, Watch} from "vue-property-decorator";
 
+interface FixedSVGAnimationElement extends SVGAnimationElement {
+    beginElement: Function;
+}
+
 @Component
 export default class DropDownDecorator extends Vue {
     @Prop(Boolean)
@@ -19,10 +23,10 @@ export default class DropDownDecorator extends Vue {
 
     @Watch("active")
     onActiveChange(value: boolean) {
-        if (value && this.$refs.open instanceof SVGAnimationElement)
-            this.$refs.open.beginElement();
-        else if (!value && this.$refs.close instanceof SVGAnimationElement)
-            this.$refs.close.beginElement();
+        if (value)
+            (this.$refs.open as FixedSVGAnimationElement).beginElement();
+        else if (!value)
+            (this.$refs.close as FixedSVGAnimationElement).beginElement();
 
     }
 }

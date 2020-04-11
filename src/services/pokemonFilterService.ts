@@ -60,18 +60,14 @@ export default {
     async getFiltersIntersection({filters}: GetFiltersIntersection): Promise<Map<string, string>> {
         let result = new Map<string, string>();
         for (const filter in filters) {
-            console.log(filter, filters[filter]);
             const allPokemonSpieces = await this.getAllFilteredPokemonSpecies({filter, options: filters[filter]});
             if (result.size === 0) {
                 result = allPokemonSpieces;
-                console.log('first:', result);
             }
             else {
                 result = new Map([...result].filter(pokemonSpecies => allPokemonSpieces.has(pokemonSpecies[0])));
-                console.log(result);
             }
         }
-        console.log('after Intersection');
         return result;
     },
 

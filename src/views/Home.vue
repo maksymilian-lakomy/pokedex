@@ -150,7 +150,6 @@ export default class Home extends Vue {
         window.scrollTo(0, 0);
         EventBus.$emit("loading-species-list", true);
         this.pokemonSpeciesList = await this.loadPokemonSpeciesList();
-        console.log('after species');
         EventBus.$emit("loading-species-list", false);
     }
 
