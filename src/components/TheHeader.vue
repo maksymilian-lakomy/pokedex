@@ -2,7 +2,7 @@
     <header class="header">
         <h1>Pokedex</h1>
         <nav class="header__nav">
-            <v-navigation-search @search="$emit('search', $event)" />
+            <v-navigation-search @search="$emit('search', $event)" :search="search"/>
             <v-navigation-filters
                 @display-filter="setActiveFilterKey($event)"
                 @reset-filters="resetFilters()"
@@ -49,6 +49,9 @@ interface OptionChangeEvent {
 export default class TheHeader extends mixins(AsyncFlags) {
     @Prop(Object)
     readonly activeFilters!: Record<string, Array<string>>;
+
+    @Prop(String)
+    readonly search!: string;
 
     filtersList: Record<string, Array<string>> = {};
     filterKey: string | null = null;

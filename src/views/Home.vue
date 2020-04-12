@@ -6,9 +6,10 @@
             @reset-filters="resetFilters()"
             @reload="reload()"
             @search="setSearch($event)"
+            :search="search"
         />
         <v-pagination
-            :currentPage="page.currentPage"
+            :currentPage="currentPage"
             @change-page="setPage($event)"
             :pageAmount="pageAmount"
         />
@@ -24,7 +25,9 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import { Route, Next } from "vue-router";
+// import { Route, Next } from "vue-router";
+
+import { parseQuery } from "@/mixins/parseQuery";
 
 import TheHeader from "@/components/TheHeader.vue";
 import ThePagination from "@/components/ThePagination.vue";
@@ -38,7 +41,10 @@ import PokemonSpeciesData from "../classes/PokemonSpeciesData";
 Component.registerHooks(["beforeRouteEnter", "beforeRouteUpdate"]);
 
 import { EventBus } from "@/events/EventBus";
-import { Watch } from 'vue-property-decorator';
+import { Watch } from "vue-property-decorator";
+
+import { filters } from "@/enums/Filters";
+import { Route, Next } from "vue-router";
 
 interface OptionChangeEvent {
     filterKey: string;
@@ -50,51 +56,49 @@ interface OptionChangeEvent {
         "v-pokemon-list": PokemonList,
         "v-header": TheHeader,
         "v-pagination": ThePagination
-    },
-    computed: {
-        pokemons() {
-            const pokemonSpecies = this.$data.pokemonSpecies as Array<
-                PokemonSpeciesData
-            >;
-        }
     }
 })
 export default class Home extends Vue {
     pokemonSpeciesList = new Array<string>();
     page = {
-        currentPage: 1,
         limit: 20,
         offset: 0
     };
 
-    search = "";
+    get search(): string | undefined {
+        const query = parseQuery(this.$route.query);
+        if (query.search) return parseQuery(this.$route.query).search[0];
+        else return undefined;
+    }
 
-    activeFilters: Record<string, Array<string>> = {};
+    beforeRouteEnter(to: Route, from: Route, next: Next<Home>) {
+        next(vm => vm.reload());
+    }
 
-    @Watch("pokemonSpeciesList")
-    onPokemonSpeciesListChange() {
-        this.setPage(this.page.currentPage);
+    beforeRouteUpdate(to: Route, from: Route, next: Next<Home>) {
+        next();
+        this.reload();
     }
 
     setPage(page: number) {
-        const pageCheck = this.checkPageBoundary(page);
-        if (pageCheck === this.page.currentPage)
-            return;
-        this.page.currentPage = pageCheck;
+        if (page === +this.$route.params.page) return;
+        const query = parseQuery(this.$route.query);
+        this.$router.push({
+            name: this.$route.name as string,
+            params: { page: page.toString() },
+            query
+        });
         this.calculateOffset();
     }
 
     calculateOffset() {
-        this.page.offset = (this.page.currentPage - 1) * this.page.limit;
+        this.page.offset = (this.currentPage - 1) * this.page.limit;
     }
 
     checkPageBoundary(page: number) {
-        if (this.pokemonSpeciesList.length === 0)
-            return 1;
-        else if (page > this.pageAmount)
-            return this.pageAmount;
-        else
-            return page;
+        if (this.pokemonSpeciesList.length === 0) return 1;
+        else if (page > this.pageAmount) return this.pageAmount;
+        else return page;
     }
 
     get pageAmount(): number {
@@ -105,46 +109,55 @@ export default class Home extends Vue {
         );
     }
 
+    get currentPage(): number {
+        return +this.$route.params.page;
+    }
+
     async setSearch(search: string) {
-        this.search = search;
-        await this.reload();
+        const query = parseQuery(this.$route.query);
+        if (!query.search && search.length === 0) return;
+        else if (query.search && query.search.includes(search)) return;
+        else if (search.length === 0) delete query.search;
+        else query.search = [search];
+        this.$router.push({
+            path: this.$route.path,
+            params: this.$route.params,
+            query
+        });
+    }
+
+    get activeFilters(): Record<string, Array<string>> {
+        const activeFilters: Record<string, Array<string>> = parseQuery(
+            this.$route.query
+        );
+        for (const query in activeFilters)
+            if (!filters.includes(query)) delete activeFilters[query];
+        return activeFilters;
     }
 
     async setFilter({ filterKey, option }: OptionChangeEvent) {
-        const options = this.activeFilters[filterKey];
-        if (!options) {
-            this.$set(this.activeFilters, filterKey, [option]);
-        } else {
-            const index = options.indexOf(option);
-            index !== -1 ? options.splice(index, 1) : options.push(option);
-        }
-        await this.reload();
+        const query = parseQuery(this.$route.query);
+        if (!query[filterKey]) query[filterKey] = [option];
+        else if (query[filterKey] && !query[filterKey].includes(option))
+            query[filterKey].push(option);
+        else query[filterKey].splice(query[filterKey].indexOf(option), 1);
+        this.$router.push({
+            path: this.$route.path,
+            params: this.$route.params,
+            query
+        });
     }
 
     async resetFilters() {
-        this.activeFilters = {};
-        await this.reload();
-    }
-
-    activeOptionsCheck(): boolean {
-        for (const options in this.activeFilters)
-            if (this.activeFilters[options].length > 0) return true;
-        return false;
-    }
-
-    async loadPokemonSpeciesList(): Promise<Array<string>> {
-        let pokemonSpeciesMap = new Map<string, string>();
-        pokemonSpeciesMap = this.activeOptionsCheck()
-            ? await pokemonFilterService.getFiltersIntersection({
-                  filters: this.activeFilters
-              })
-            : await pokemonSpeciesService.getMap();
-        if (this.search)
-            pokemonSpeciesMap.forEach((value, key) => {
-                if (!key.startsWith(this.search.toLowerCase()))
-                    pokemonSpeciesMap.delete(key);
-            });
-        return [...pokemonSpeciesMap.values()];
+        const query = parseQuery(this.$route.query);
+        for (const filterKey of filters) {
+            if (query[filterKey]) delete query[filterKey];
+        }
+        this.$router.push({
+            path: this.$route.path,
+            params: this.$route.params,
+            query
+        });
     }
 
     async reload() {
@@ -152,17 +165,37 @@ export default class Home extends Vue {
         EventBus.$emit("loading-species-list", true);
         this.pokemonSpeciesList = await this.loadPokemonSpeciesList();
         EventBus.$emit("loading-species-list", false);
+        const page = this.checkPageBoundary(+this.$route.params.page);
+        this.setPage(page);
     }
 
-    async created() {
-        await this.reload();
+    async loadPokemonSpeciesList(): Promise<Array<string>> {
+        let pokemonSpeciesMap = new Map<string, string>();
+        const activeOptionsCheck = () => {
+            for (const options in this.activeFilters)
+                if (this.activeFilters[options].length > 0) return true;
+            return false;
+        };
+        pokemonSpeciesMap = activeOptionsCheck()
+            ? await pokemonFilterService.getFiltersIntersection({
+                  filters: this.activeFilters
+              })
+            : await pokemonSpeciesService.getMap();
+        pokemonSpeciesMap.forEach((value, key) => {
+            if (this.search && !key.startsWith(this.search.toLowerCase()))
+                pokemonSpeciesMap.delete(key);
+        });
+        return [...pokemonSpeciesMap.values()];
     }
 
     cardClicked(event: PokemonSpeciesData) {
-        this.$router.push({name: 'Pokemon', params: {
-            speciesId: event.id.toString(),
-            evolution: event.evolutionChain.toString()
-        }})
+        this.$router.push({
+            name: "Pokemon",
+            params: {
+                speciesId: event.id.toString(),
+                evolution: event.evolutionChain.toString()
+            }
+        });
     }
 }
 </script>

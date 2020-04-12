@@ -7,7 +7,7 @@ Vue.use(VueRouter)
 
 const routes: Array<RouteConfig> = [
     {
-        path: '/',
+        path: '/page=:page',
         name: 'Listing',
         component: Home
     },

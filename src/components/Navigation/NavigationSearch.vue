@@ -3,6 +3,7 @@
         class="nav__search"
         placeholder="Search"
         @keyup="onSearchEnter($event, $event.target.value)"
+        :value="search"
     />
 </template>
 
