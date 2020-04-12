@@ -1,5 +1,5 @@
 <template>
-    <div class="pokemon-card" @mouseenter="active = true" @mouseleave="active = false">
+    <div class="pokemon-card" @mouseenter="active = true" @mouseleave="active = false" @click="$emit('click', $event)">
         <div class="pokemon-card__portrait">
             <transition name="slide">
                 <div

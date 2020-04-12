@@ -4,6 +4,7 @@
         <div v-if="!allFlagsFalse && (pokemonSpecies.length === 0 )">No pokemons found.</div>
         <ol class="pokemon-list__listing" v-else>
             <v-pokemon-card
+                @click="$emit('click-card', pokemon.id)"
                 class="pokemon-list__listing__card"
                 v-for="pokemon in pokemonSpeciesSorted"
                 :key="pokemon.id"
@@ -94,7 +95,7 @@ export default class PokemonList extends Vue {
         for (let i = startPosition; condition(i); i++) {
             newPokemons.push(
                 await pokemonSpeciesService.getByUrl(
-                    this.$props.pokemonSpeciesList[i]
+                    {url: this.$props.pokemonSpeciesList[i]}
                 )
             );
         }

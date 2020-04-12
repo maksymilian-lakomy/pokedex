@@ -13,6 +13,7 @@
             :pageAmount="pageAmount"
         />
         <v-pokemon-list
+            @click-card="cardClicked($event)"
             :pokemonSpeciesList="pokemonSpeciesList"
             :limit="page.limit"
             :offset.sync="page.offset"
@@ -155,6 +156,12 @@ export default class Home extends Vue {
 
     async created() {
         await this.reload();
+    }
+
+    cardClicked(event: number) {
+        this.$router.push({name: 'Pokemon', params: {
+            speciesName: event.toString()
+        }})
     }
 }
 </script>

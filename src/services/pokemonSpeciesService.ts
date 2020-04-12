@@ -25,7 +25,7 @@ async function getFullSpecies(pokemonSpeciesData: PokemonSpeciesData, full?: boo
     for await (const variety of pokemonSpeciesData.varieties) {
         variety.pokemonFull = await pokemonService.getByUrl(variety.pokemon.url)
         if (full)
-            break;
+            return pokemonSpeciesData;
     }
     return pokemonSpeciesData;
 }
