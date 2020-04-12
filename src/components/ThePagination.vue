@@ -2,30 +2,31 @@
     <ol class="list">
         <li class="list__element pagination__element__page-number" v-if="(pages[0] > 1)">
             <button
-                @click="goToPage(1)"
+                @click="setPage(1)"
                 class="list__element__button list__element__page-number"
             >{{'1' | numeric}}</button>
         </li>
-        <li class="list__element list__element__page-number" v-if="(pages[0] > 1)">
-            . . .
-        </li>
+        <li class="list__element list__element__page-number" v-if="(pages[0] > 1)">. . .</li>
         <li class="list__element" v-for="i in pages" :key="i">
             <button
-                @click="goToPage(i)"
+                @click="setPage(i)"
                 class="list__element__button list__element__page-number"
                 :class="{'list__element__button--active': i === currentPage}"
             >{{i.toString() | numeric}}</button>
         </li>
         <li
             class="list__element list__element__page-number list__element__page-number--count"
-        >/ {{pageAmount.toString() | numeric}}</li>
+        >/  {{pageAmount.toString() | numeric}}</li>
     </ol>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
-import { Component, Prop } from "vue-property-decorator";
+import { Component, Prop, Mixins } from "vue-property-decorator";
 import { EventBus } from "@/events/EventBus";
+
+import { AsyncFlags } from "@/mixins/AsyncFlags";
+import { parseQuery } from "@/mixins/parseQuery";
 
 @Component({
     filters: {
@@ -36,7 +37,7 @@ import { EventBus } from "@/events/EventBus";
         }
     }
 })
-export default class ThePagination extends Vue {
+export default class ThePagination extends Mixins(AsyncFlags) {
     @Prop(Number)
     readonly currentPage!: number;
 
@@ -71,9 +72,16 @@ export default class ThePagination extends Vue {
         return pages;
     }
 
-    goToPage(page: number) {
-        if (this.flags.loadingSpeciesList || this.flags.loadingSpecies) return;
-        this.$emit("change-page", page);
+    setPage(page: number) {
+        if (!this.canPerformAsyncOperation()) return;
+        const query = parseQuery(this.$route.query);
+        if (query.p && query.p.includes(page.toString())) return;
+        query.p = [page.toString()];
+        this.$router.push({
+            path: this.$route.path,
+            params: this.$route.params,
+            query
+        });
     }
 }
 </script>

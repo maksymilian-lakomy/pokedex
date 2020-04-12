@@ -1,5 +1,6 @@
 <template>
     <div id="app">
+        <v-header />
         <router-view />
     </div>
 </template>
@@ -8,9 +9,14 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 
-@Component
-export default class App extends Vue {
-}
+import TheHeader from "@/components/TheHeader.vue";
+
+@Component({
+    components: {
+        "v-header": TheHeader
+    }
+})
+export default class App extends Vue {}
 </script>
 
 <style lang="sass">
@@ -18,7 +24,15 @@ export default class App extends Vue {
 body
     margin: 0
 
-#app 
+#app
     font-family: 'Roboto', sans-serif
-    width: 100%
+    display: flex
+    position: relative
+    flex-direction: column
+    margin: auto
+    width: 75%
+    @media (max-width: 768px)
+        width: 90%                
+    @media (max-width: 350px)
+        width: 100%
 </style>

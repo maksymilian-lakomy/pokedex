@@ -43,15 +43,15 @@ export default class NavigationFilterOptions extends Vue {
 
 <style lang="sass" scoped>
 .nav__filter-options-list
-    padding-top: 1em
-    margin: 0
     padding: 0
+    margin: 0
     width: 100%
     display: flex
     overflow-x: auto
     overflow-y: hidden
     font-size: .8em
     &__element
+        padding: 1em 0
         display: inline-block
         list-style: none
         margin-right: .5em
