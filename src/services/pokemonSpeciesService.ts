@@ -13,11 +13,20 @@ import PokemonSimpleData from '@/classes/PokemonSimpleData';
 
 interface GetParams {
     pokemon: number | string;
+    full?: boolean;
 }
 
-async function getFullSpecies(pokemonSpeciesData: PokemonSpeciesData) {
-    for await (const variety of pokemonSpeciesData.varieties) 
+interface GetByUrlParams {
+    url: string;
+    full?: boolean;
+}
+
+async function getFullSpecies(pokemonSpeciesData: PokemonSpeciesData, full?: boolean) {
+    for await (const variety of pokemonSpeciesData.varieties) {
         variety.pokemonFull = await pokemonService.getByUrl(variety.pokemon.url)
+        if (full)
+            break;
+    }
     return pokemonSpeciesData;
 }
 
@@ -40,19 +49,19 @@ export default {
         return pokemonSpeciesMap;
     },
 
-    async get(params: GetParams): Promise<PokemonSpeciesData> {
-        const response: AxiosResponse = await Service.get(`${pokemonEndPoint}/${params.pokemon}`);
+    async get({pokemon, full = false}: GetParams): Promise<PokemonSpeciesData> {
+        const response: AxiosResponse = await Service.get(`${pokemonEndPoint}/${pokemon}`);
         if (response.status !== 200)
             throw response;
 
-        return await getFullSpecies(new PokemonSpeciesData(response.data));
+        return await getFullSpecies(new PokemonSpeciesData(response.data), full);
     },
 
-    async getByUrl(url: string): Promise<PokemonSpeciesData> {
+    async getByUrl({url, full = false}: GetByUrlParams): Promise<PokemonSpeciesData> {
         const response: AxiosResponse = await Axios.get(url);
         if (response.status !== 200)
             throw response;
 
-        return await getFullSpecies(new PokemonSpeciesData(response.data));
+        return await getFullSpecies(new PokemonSpeciesData(response.data), full);
     }
 }
