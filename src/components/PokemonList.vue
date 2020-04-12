@@ -4,7 +4,7 @@
         <div v-if="!allFlagsFalse && (pokemonSpecies.length === 0 )">No pokemons found.</div>
         <ol class="pokemon-list__listing" v-else>
             <v-pokemon-card
-                @click="$emit('click-card', pokemon.id)"
+                @click="$emit('click-card', $event)"
                 class="pokemon-list__listing__card"
                 v-for="pokemon in pokemonSpeciesSorted"
                 :key="pokemon.id"

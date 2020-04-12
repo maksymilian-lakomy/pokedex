@@ -12,7 +12,7 @@ const routes: Array<RouteConfig> = [
         component: Home
     },
     {
-        path: '/pokemon/:speciesName',
+        path: '/pokemon/evolution=:evolution&species=:speciesId',
         name: 'Pokemon',
         component: Pokemon
     }

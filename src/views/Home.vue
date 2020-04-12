@@ -158,9 +158,10 @@ export default class Home extends Vue {
         await this.reload();
     }
 
-    cardClicked(event: number) {
+    cardClicked(event: PokemonSpeciesData) {
         this.$router.push({name: 'Pokemon', params: {
-            speciesName: event.toString()
+            speciesId: event.id.toString(),
+            evolution: event.evolutionChain.toString()
         }})
     }
 }

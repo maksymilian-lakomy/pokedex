@@ -37,7 +37,7 @@ interface Generation {
 export default class PokemonSpeciesData {
     readonly id: number;
     readonly name: string;
-    readonly evolutionChain: EvolutionChain;
+    readonly evolutionChain: number;
 
     readonly color: Tag;
     readonly habitat: Tag;
@@ -50,7 +50,7 @@ export default class PokemonSpeciesData {
     constructor(apiData: PokemonSpeciesApiData) {
         this.id = apiData.id;
         this.name = apiData.name;
-        this.evolutionChain = apiData.evolution_chain;
+        this.evolutionChain = +apiData.evolution_chain.url.replace("https://pokeapi.co/api/v2/evolution-chain/", "").replace('/', "");
         this.color = apiData.color;
         this.habitat = apiData.habitat;
         this.shape = apiData.shape;
