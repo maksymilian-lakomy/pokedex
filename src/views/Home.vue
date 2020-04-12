@@ -4,7 +4,6 @@
             :activeFilters.sync="activeFilters"
             @option-change="setFilter($event)"
             @reset-filters="resetFilters()"
-            @reload="reload()"
             @search="setSearch($event)"
             :search="search"
         />
@@ -25,8 +24,6 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-// import { Route, Next } from "vue-router";
-
 import { parseQuery } from "@/mixins/parseQuery";
 
 import TheHeader from "@/components/TheHeader.vue";
@@ -37,8 +34,6 @@ import PokemonList from "@/components/PokemonList.vue";
 import pokemonFilterService from "@/services/pokemonFilterService";
 import pokemonSpeciesService from "@/services/pokemonSpeciesService";
 import PokemonSpeciesData from "../classes/PokemonSpeciesData";
-
-Component.registerHooks(["beforeRouteEnter", "beforeRouteUpdate"]);
 
 import { EventBus } from "@/events/EventBus";
 import { Watch } from "vue-property-decorator";
@@ -60,35 +55,53 @@ interface OptionChangeEvent {
 })
 export default class Home extends Vue {
     pokemonSpeciesList = new Array<string>();
+    @Watch("pokemonSpeciesList")
+    onPokemonSpeciesListChange() {
+        const availablePage = this.checkPageBoundary(this.currentPage);
+        if (availablePage !== this.currentPage) this.setPage(availablePage);
+    }
+
     page = {
         limit: 20,
         offset: 0
     };
 
-    get search(): string | undefined {
-        const query = parseQuery(this.$route.query);
-        if (query.search) return parseQuery(this.$route.query).search[0];
-        else return undefined;
-    }
-
-    beforeRouteEnter(to: Route, from: Route, next: Next<Home>) {
-        next(vm => vm.reload());
-    }
-
-    beforeRouteUpdate(to: Route, from: Route, next: Next<Home>) {
-        next();
+    created() {
+        this.calculateOffset();
         this.reload();
     }
 
-    setPage(page: number) {
-        if (page === +this.$route.params.page) return;
+    // --------------------------
+    // Query Page
+    // --------------------------
+    get currentPage(): number {
         const query = parseQuery(this.$route.query);
+        if (!query.p) return 1;
+        return +query.p;
+    }
+
+    @Watch("currentPage")
+    onCurrentPageChange() {
+        this.calculateOffset();
+    }
+
+    get pageAmount(): number {
+        if (this.pokemonSpeciesList.length === 0) return 0;
+        return (
+            Math.floor(this.pokemonSpeciesList.length / this.page.limit) +
+            (this.pokemonSpeciesList.length % this.page.limit !== 0 ? 1 : 0)
+        );
+    }
+
+    setPage(page: number) {
+        const query = parseQuery(this.$route.query);
+        if (query.p && query.p.includes(page.toString())) return;
+        query.p = [page.toString()];
         this.$router.push({
-            name: this.$route.name as string,
-            params: { page: page.toString() },
+            path: this.$route.path,
+            params: this.$route.params,
             query
         });
-        this.calculateOffset();
     }
 
     calculateOffset() {
@@ -101,16 +114,18 @@ export default class Home extends Vue {
         else return page;
     }
 
-    get pageAmount(): number {
-        if (this.pokemonSpeciesList.length === 0) return 0;
-        return (
-            Math.floor(this.pokemonSpeciesList.length / this.page.limit) +
-            (this.pokemonSpeciesList.length % this.page.limit !== 0 ? 1 : 0)
-        );
+    // --------------------------
+    // Query Search
+    // --------------------------
+    get search(): string | undefined {
+        const query = parseQuery(this.$route.query);
+        if (query.search) return parseQuery(this.$route.query).search[0];
+        else return undefined;
     }
 
-    get currentPage(): number {
-        return +this.$route.params.page;
+    @Watch("search")
+    onSearchChange() {
+        this.reload();
     }
 
     async setSearch(search: string) {
@@ -126,6 +141,9 @@ export default class Home extends Vue {
         });
     }
 
+    // --------------------------
+    // Query for filters
+    // --------------------------
     get activeFilters(): Record<string, Array<string>> {
         const activeFilters: Record<string, Array<string>> = parseQuery(
             this.$route.query
@@ -133,6 +151,11 @@ export default class Home extends Vue {
         for (const query in activeFilters)
             if (!filters.includes(query)) delete activeFilters[query];
         return activeFilters;
+    }
+
+    @Watch("activeFilters")
+    onActiveFiltersChange() {
+        this.reload();
     }
 
     async setFilter({ filterKey, option }: OptionChangeEvent) {
@@ -160,13 +183,14 @@ export default class Home extends Vue {
         });
     }
 
+    // --------------------------
+    // View logic
+    // --------------------------
     async reload() {
         window.scrollTo(0, 0);
         EventBus.$emit("loading-species-list", true);
         this.pokemonSpeciesList = await this.loadPokemonSpeciesList();
         EventBus.$emit("loading-species-list", false);
-        const page = this.checkPageBoundary(+this.$route.params.page);
-        this.setPage(page);
     }
 
     async loadPokemonSpeciesList(): Promise<Array<string>> {
@@ -188,6 +212,9 @@ export default class Home extends Vue {
         return [...pokemonSpeciesMap.values()];
     }
 
+    // --------------------------
+    // Miscellaneous
+    // --------------------------
     cardClicked(event: PokemonSpeciesData) {
         this.$router.push({
             name: "Pokemon",

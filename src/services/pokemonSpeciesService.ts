@@ -24,7 +24,7 @@ interface GetByUrlParams {
 async function getFullSpecies(pokemonSpeciesData: PokemonSpeciesData, full?: boolean) {
     for await (const variety of pokemonSpeciesData.varieties) {
         variety.pokemonFull = await pokemonService.getByUrl(variety.pokemon.url)
-        if (full)
+        if (!full)
             return pokemonSpeciesData;
     }
     return pokemonSpeciesData;

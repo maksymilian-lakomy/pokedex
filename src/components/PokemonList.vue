@@ -27,12 +27,14 @@ import PokemonCard from "@/components/PokemonCard.vue";
 
 import { EventBus } from "@/events/EventBus";
 
+import { AsyncFlags } from "@/mixins/AsyncFlags";
+
 @Component({
     components: {
         "v-pokemon-card": PokemonCard
     }
 })
-export default class PokemonList extends Vue {
+export default class PokemonList extends AsyncFlags {
     @Prop(Array)
     readonly pokemonSpeciesList!: Array<string>;
 
@@ -58,45 +60,31 @@ export default class PokemonList extends Vue {
         return this.flags.loadingSpeciesList || this.flags.loadingSpecies;
     }
 
-    async created() {
-        EventBus.$on(
-            "loading-species-list",
-            (event: boolean) => (this.flags.loadingSpeciesList = event)
-        );
-        EventBus.$on(
-            "loading-species",
-            (event: boolean) => (this.flags.loadingSpecies = event)
-        );
-        this.pokemonSpecies = await this.loadPage(
-            this.offset,
-            this.limit
-        );
-    }
-
     @Watch("offset")
     async onPageChange() {
-        this.pokemonSpecies = await this.loadPage(this.offset, this.limit);
+        if (this.canPerformAsyncOperation())
+            this.pokemonSpecies = await this.loadPage(this.offset, this.limit);
     }
 
     @Watch("pokemonSpeciesList")
     async onPokemonSpeciesListChange() {
-        this.pokemonSpecies = await this.loadPage(
-            this.$props.offset,
-            this.$props.limit
-        );
+        if (this.canPerformAsyncOperation())
+            this.pokemonSpecies = await this.loadPage(
+                this.$props.offset,
+                this.$props.limit
+            );
     }
 
     async loadPage(startPosition: number, limit: number) {
         EventBus.$emit("loading-species", true);
         const newPokemons = new Array<PokemonSpeciesData>();
         const condition = (i: number) =>
-            i < startPosition + limit &&
-            i < this.pokemonSpeciesList.length;
+            i < startPosition + limit && i < this.pokemonSpeciesList.length;
         for (let i = startPosition; condition(i); i++) {
             newPokemons.push(
-                await pokemonSpeciesService.getByUrl(
-                    {url: this.$props.pokemonSpeciesList[i]}
-                )
+                await pokemonSpeciesService.getByUrl({
+                    url: this.$props.pokemonSpeciesList[i]
+                })
             );
         }
         EventBus.$emit("loading-species", false);
