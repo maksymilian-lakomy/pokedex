@@ -5,13 +5,12 @@
                 <td>From</td>
                 <td>Current</td>
                 <td>To</td>
-                
             </tr>
             <td>
-                <tr v-if="firstColumn">{{firstColumn.name}}</tr>
+                <tr v-if="previousIndex !== -1">{{currentChain[previousIndex].name}}</tr>
             </td>
             <td>
-                <tr v-if="secondColumn">{{secondColumn.name}}</tr>
+                <tr v-if="currentIndex !== -1">{{currentChain[currentIndex].name}}</tr>
             </td>
             <td>
                 <tr
@@ -20,6 +19,8 @@
                 >{{pokemonSpecies.name}}</tr>
             </td>
         </table>
+        <button @click="changePage(currentIndex+1)">Next pokemon in evolution</button>
+        <button @click="changePage(currentIndex-1)">Previous pokemon in evolution</button>
     </div>
 </template>
 
@@ -44,33 +45,52 @@ export default class Pokemon extends Vue {
         evolutionData = await pokemonEvolutionChainService.getSpeciesFromEvolutionChain(
             evolutionData
         );
-        next(vm => vm.setData(evolutionData));
+        next(vm => {
+            vm.evolutionData = evolutionData;
+            vm.currentChain = vm.getPokemonSpecies(
+                +to.params.speciesId,
+                evolutionData
+            );
+        });
     }
 
-    setData(evolutionData: EvolutionData) {
-        this.evolutionData = evolutionData;
-        this.currentChain = this.getPokemonSpecies(
-            +this.$route.params.speciesId,
-            evolutionData
+    async beforeRouteUpdate(to: Route, from: Route, next: Next<Pokemon>) {
+        if (this.evolutionData)
+            this.currentChain = this.getPokemonSpecies(
+                +to.params.speciesId,
+                this.evolutionData
+            );
+        next();
+    }
+
+    changePage(index: number) {
+        this.$router.push({
+            params: {
+                speciesId: this.currentChain[index].id.toString()
+            }
+        });
+    }
+
+    evolutionData: EvolutionData | null = null;
+    currentChain = new Array<PokemonSpeciesData>();
+    isLoading = true;
+
+    get previousIndex() {
+        return this.currentChain.findIndex(
+            (value, index) => index < this.currentIndex
         );
     }
-
-    get firstColumn() {
-        return this.currentChain.find(
-            pokemonSpecies => pokemonSpecies.id < +this.$route.params.speciesId
-        );
-    }
-
-    get secondColumn() {
-        return this.currentChain.find(
+    get currentIndex() {
+        return this.currentChain.findIndex(
             pokemonSpecies =>
                 pokemonSpecies.id === +this.$route.params.speciesId
         );
     }
 
     get thirdColumn() {
-        return this.currentChain.filter(
-            pokemonSpecies => pokemonSpecies.id > +this.$route.params.speciesId
+        return this.currentChain.slice(
+            this.currentIndex + 1,
+            this.currentChain.length
         );
     }
 
@@ -101,10 +121,6 @@ export default class Pokemon extends Vue {
             return tree;
         }
     }
-
-    evolutionData: EvolutionData | null = null;
-    currentChain = new Array<PokemonSpeciesData>();
-    isLoading = true;
 }
 </script>
 
