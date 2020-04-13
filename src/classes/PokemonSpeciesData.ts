@@ -11,6 +11,17 @@ interface PokemonSpeciesApiData {
     name: string;
     evolution_chain: EvolutionChain;
 
+    flavor_text_entries: {
+        flavor_text: string;
+        language: {
+            name: string;
+        };
+        version: {
+            name: string;
+            url: string;
+        };
+    }[];
+
     color: Tag;
     habitat: Tag;
     shape: Tag;
@@ -39,6 +50,15 @@ export default class PokemonSpeciesData {
     readonly name: string;
     readonly evolutionChain: number;
 
+    readonly flavorTextEntries: {
+        text: string;
+        language: string;
+        version: {
+            name: string;
+            url: string;
+        };
+    }[];
+
     readonly color: Tag;
     readonly habitat: Tag;
     readonly shape: Tag;
@@ -51,6 +71,18 @@ export default class PokemonSpeciesData {
         this.id = apiData.id;
         this.name = apiData.name;
         this.evolutionChain = +apiData.evolution_chain.url.replace("https://pokeapi.co/api/v2/evolution-chain/", "").replace('/', "");
+        this.flavorTextEntries = apiData.flavor_text_entries.filter(entry => entry.language.name === "en").map(entry => {
+            const newEntry: {
+                text: string;
+                language: string;
+                version: {
+                    name: string;
+                    url: string;
+                };
+            } = { text: entry.flavor_text, language: entry.language.name, version: entry.version };
+            return newEntry;
+        })
+
         this.color = apiData.color;
         this.habitat = apiData.habitat;
         this.shape = apiData.shape;

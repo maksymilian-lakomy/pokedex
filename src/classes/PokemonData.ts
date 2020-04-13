@@ -16,11 +16,38 @@ export interface PokemonApiData {
         front_default: string;
     };
 
+    stats: {
+        base_stat: number;
+        effort: number;
+        stat: {
+            name: string;
+            url: string;
+        };
+    }[];
+    
+    abilities: {
+        ability: Ability;
+    }[];
+
     types: {
         slot: number;
         type: Tag;   
     }[];
 
+}
+
+interface Stat {
+    base: number;
+    effort: 0;
+    stat: {
+        name: string;
+        url: string;
+    };
+}
+
+interface Ability {
+    name: string;
+    url: string;
 }
 
 export default class PokemonData {
@@ -38,6 +65,9 @@ export default class PokemonData {
         frontDefault: string;
     }
 
+    readonly stats: Stat[];
+    readonly abilities: Ability[];
+
     readonly tags: Tag[];
 
     constructor(apiData: PokemonApiData) {
@@ -54,6 +84,17 @@ export default class PokemonData {
             backDefault: apiData.sprites.back_default,
             frontDefault: apiData.sprites.front_default
         }
+
+        this.abilities = apiData.abilities.map(ability => ability.ability);
+
+        this.stats = apiData.stats.map(stat => {
+            return {
+                base: stat.base_stat,
+                effort: stat.effort,
+                stat: stat.stat
+            } as Stat;
+        });
+
         this.tags = apiData.types.map(type => {
             return type.type;
         });
