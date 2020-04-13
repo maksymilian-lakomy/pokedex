@@ -78,6 +78,16 @@ export default class Home extends Mixins(Filters, Search) {
         this.calculateOffset();
     }
 
+    setPage(page: number) {
+        const query = parseQuery(this.$route.query);
+        query.p = [page.toString()];
+        this.$router.push({
+            path: this.$route.path,
+            params: this.$route.params,
+            query
+        });
+    }
+
     get pageAmount(): number {
         if (this.pokemonSpeciesList.length === 0) return 0;
         return (
