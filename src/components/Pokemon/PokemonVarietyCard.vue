@@ -46,7 +46,8 @@ export default class PokemonVarietyCard extends Mixins(StringFilters) {
 @import "@/styles/variables"
     
 .pokemon-variety-card
-    width: 100%
+    padding: .25em 1em
+    width: calc(100% - 2 * 1em)
     border-radius: 1em
     background-color: $light-gray
     display: flex
@@ -56,11 +57,12 @@ export default class PokemonVarietyCard extends Mixins(StringFilters) {
     align-items: center
     cursor: pointer
     &__portrait
-        padding: .25em 1em
         width: 96px
         height: 96px
         opacity: $portrait-not-active-opacity
         transition-duration: .25s
+        img
+            width: inherit
         &__placeholder
             opacity: $placeholder-opacity
     &__portrait--active

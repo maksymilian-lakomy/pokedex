@@ -31,6 +31,10 @@ body
     flex-direction: column
     margin: auto
     width: 75%
+    @media (max-width: 1440px)
+        width: 80%
+    @media (max-width: 1140px)
+        width: 85%
     @media (max-width: 768px)
         width: 90%                
     @media (max-width: 350px)

@@ -6,7 +6,8 @@ import Component from 'vue-class-component'
     filters: {
         name(value: string) {
             if (typeof value !== "string") return;
-            return value.charAt(0).toUpperCase() + value.slice(1);
+            value = value.replace('-', ' ');
+            return value.replace(/\w\S*/g, string => string.charAt(0).toUpperCase() + string.substr(1).toLowerCase());
         },
         id(value: string | number) {
             let id: string = value.toString();

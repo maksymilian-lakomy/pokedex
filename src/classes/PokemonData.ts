@@ -29,6 +29,8 @@ export interface PokemonApiData {
         ability: Ability;
     }[];
 
+    moves: {move: Move}[];
+
     types: {
         slot: number;
         type: Tag;   
@@ -36,7 +38,7 @@ export interface PokemonApiData {
 
 }
 
-interface Stat {
+export interface Stat {
     base: number;
     effort: 0;
     stat: {
@@ -45,7 +47,12 @@ interface Stat {
     };
 }
 
-interface Ability {
+export interface Move {
+    name: string;
+    url: string;
+}
+
+export interface Ability {
     name: string;
     url: string;
 }
@@ -67,6 +74,7 @@ export default class PokemonData {
 
     readonly stats: Stat[];
     readonly abilities: Ability[];
+    readonly moves: Move[];
 
     readonly tags: Tag[];
 
@@ -86,7 +94,7 @@ export default class PokemonData {
         }
 
         this.abilities = apiData.abilities.map(ability => ability.ability);
-
+        this.moves = apiData.moves.map(move => move.move);
         this.stats = apiData.stats.map(stat => {
             return {
                 base: stat.base_stat,

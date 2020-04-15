@@ -39,6 +39,7 @@ interface OptionChangeEvent {
     filterKey: string;
     option: string;
 }
+Component.registerHooks(["beforeRouteEnter"]);
 
 @Component({
     components: {
@@ -59,9 +60,11 @@ export default class Home extends Mixins(Filters, Search) {
         offset: 0
     };
 
-    created() {
-        this.calculateOffset();
-        this.reload();
+    beforeRouteEnter(to: Route, from: Route, next: Next<Home>) {
+        next(async vm => {
+            await vm.calculateOffset();
+            await vm.reload();
+        });
     }
 
     // --------------------------

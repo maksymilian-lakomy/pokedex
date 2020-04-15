@@ -68,6 +68,8 @@ export default class PokemonEvolutions extends Vue {
     }
 
     changeEvolution(id: number) {
+        if (+this.$route.params.speciesId === id)
+            return;
         const params = {};
         Object.assign(params, this.$route.params, {speciesId: id.toString()});
         this.$router.push({
@@ -98,9 +100,10 @@ export default class PokemonEvolutions extends Vue {
     background-color: $light-gray
 
 .pokemon-evolutions-table
+    justify-content: center
     display: grid
-    grid-template-columns: 1fr repeat(3, 96px) 1fr 
-    grid-template-areas: ". previous current next ."
+    grid-template-columns: repeat(3, 96px)
+    grid-template-areas: "previous current next"
     align-items: center
     column-gap: 1em
 

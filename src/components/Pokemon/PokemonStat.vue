@@ -47,11 +47,17 @@ export default class PokemonStat extends Mixins(StringFilters) {
         font-weight: bolder
         margin-right: 1em
         width: 20%
+        @media (max-width: 1340px)
+            width: 25%
+        @media (max-width: 1240px)
+            width: 35%
     &__base
         font-weight: bolder
         margin-right: 1em
         width: 10%
         text-align: right
+        @media (max-width: 1440px)
+            width: 20%
     &__bar
         border-radius: .125em
         background-color: $light-gray

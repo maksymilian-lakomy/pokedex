@@ -1,6 +1,6 @@
 <template>
     <header class="header">
-        <h1>Pokedex</h1>
+        <router-link to="/"><h1>Pokedex</h1></router-link>
         <nav class="header__nav">
             <v-navigation-search @search="setSearch($event)" :search="search"/>
             <v-navigation-filters
@@ -131,6 +131,9 @@ export default class TheHeader extends mixins(AsyncFlags, Filters, Search) {
 .header
     max-width: 100%
     border-bottom: 1px solid #E9E9E9
+    a
+        color: inherit
+        text-decoration: unset
 
 .filter-options-enter-active, .filter-options-leave-active 
     transition-duration: .5s

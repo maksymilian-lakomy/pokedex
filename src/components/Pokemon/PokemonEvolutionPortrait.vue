@@ -47,8 +47,7 @@ export default class PokemonEvolutionPortrait extends Vue {
 
 .pokemon-evolution-portrait
     border-radius: 50%
-    width: 96px
-    height: 96px
+    width: 100%
 
     &__img
         opacity: $portrait-not-active-opacity

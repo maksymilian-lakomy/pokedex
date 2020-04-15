@@ -28,6 +28,7 @@ export default class PokemonTagsList extends Mixins(StringFilters) {
 .pokemon-card__tags
     padding: 0
     margin: 0
+    margin-top: .5em
     display: flex
     &__element
         margin-right: .5em

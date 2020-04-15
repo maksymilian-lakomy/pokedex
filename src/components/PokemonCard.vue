@@ -26,16 +26,17 @@
         </div>
         <div class="pokemon-card__info">
             <div class="pokemon-card__info__label">
-                <div class="pokemon-card__info__label__id">{{id}}</div>
-                <div class="pokemon-card__info__label__name">{{pokemonData.name | capitalize}}</div>
+                <div class="pokemon-card__info__label__id">{{pokemonData.id | id}}</div>
+                <div class="pokemon-card__info__label__name">{{pokemonData.name | name}}</div>
             </div>
-            <ul class="pokemon-card__info__tags">
+            <v-pokemon-tags-list :pokemonData="pokemonData"/>
+            <!-- <ul class="pokemon-card__info__tags">
                 <li
-                    class="pokemon-card__info__tags__tag"
+                    class="pokemon-card__info__tags__element"
                     v-for="(tag, i) in tags"
                     :key="i"
-                >{{tag.name | capitalize}}</li>
-            </ul>
+                ><v-pokemon-tag :tag="tag"/></li>
+            </ul> -->
         </div>
     </div>
 </template>
@@ -45,27 +46,22 @@ import Vue from "vue";
 import Component from "vue-class-component";
 
 import PokemonSpeciesData from "@/classes/PokemonSpeciesData";
+import PokemonTagsList from "@/components/Pokemon/PokemonTagsList.vue";
+import { Prop, Mixins } from 'vue-property-decorator';
+import { StringFilters } from '@/mixins/StringFilters';
 
 @Component({
-    props: {
-        pokemonSpecies: {
-            type: PokemonSpeciesData,
-            required: true
-        },
-        variety: {
-            type: Number,
-            required: true
-        }
-    },
-    filters: {
-        capitalize(value?: string) {
-            if (!value) return;
-            value = value.replace("-", " ");
-            return value.charAt(0).toUpperCase() + value.slice(1);
-        }
+    components: {
+        "v-pokemon-tags-list": PokemonTagsList
     }
 })
-export default class PokemonCard extends Vue {
+export default class PokemonCard extends Mixins(StringFilters) {
+    @Prop(PokemonSpeciesData)
+    pokemonSpecies!: PokemonSpeciesData;
+
+    @Prop(Number)
+    variety!: number;
+
     active = false;
     portrait = {
         loaded: false
@@ -73,12 +69,6 @@ export default class PokemonCard extends Vue {
 
     onLoaded() {
         this.portrait.loaded = true;
-    }
-
-    get id() {
-        let id: string = this.$props.pokemonSpecies.id.toString();
-        while (id.length < 3) id = `0${id}`;
-        return id;
     }
 
     get pokemonData() {
@@ -168,15 +158,8 @@ export default class PokemonCard extends Vue {
             margin-top: .5em
             padding: 0
 
-            &__tag
-                padding: .125em .5em
-                font-size: .75em
-                border-radius: .5em
-                margin-right: .5em
-                background-color: #E9E9E9
+            &__element
                 list-style: none
-                &:last-of-type
-                    margin-right: unset
 
 .slide-enter-active, .slide-leave-active 
     transition-duration: .25s
