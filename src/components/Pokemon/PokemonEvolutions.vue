@@ -1,28 +1,31 @@
 <template>
-    <div class="pokemon-evolutions-table">
-        <div class="pokemon-evolutions-table__previous" v-if="previousEvolution">
-            <v-pokemon-evolution-portrait
-                :pokemonData="getPokemonVariation(previousEvolution, 0)"
-                @click="changeEvolution(previousEvolution.id)"
-            />
+    <section>
+        <h2>Evolution</h2>
+        <div class="pokemon-evolutions-table">
+            <div class="pokemon-evolutions-table__previous" v-if="previousEvolution">
+                <v-pokemon-evolution-portrait
+                    :pokemonData="getPokemonVariation(previousEvolution, 0)"
+                    @click="changeEvolution(previousEvolution.id)"
+                />
+            </div>
+            <div class="pokemon-evolutions-table__current" v-if="currentEvolution">
+                <v-pokemon-evolution-portrait
+                    :pokemonData="getPokemonVariation(currentEvolution, varietyIndex)"
+                    :isMain="true"
+                    @click="changeEvolution(currentEvolution.id)"
+                />
+            </div>
+            <div class="pokemon-evolutions-table__next" v-if="nextEvolutions">
+                <v-pokemon-evolution-portrait
+                    class="pokemon-evolutions-table__portrait"
+                    v-for="evolution in nextEvolutions"
+                    :key="evolution.id"
+                    :pokemonData="getPokemonVariation(evolution, 0)"
+                    @click="changeEvolution(evolution.id)"
+                />
+            </div>
         </div>
-        <div class="pokemon-evolutions-table__current" v-if="currentEvolution">
-            <v-pokemon-evolution-portrait
-                :pokemonData="getPokemonVariation(currentEvolution, varietyIndex)"
-                :isMain="true"
-                @click="changeEvolution(currentEvolution.id)"
-            />
-        </div>
-        <div class="pokemon-evolutions-table__next" v-if="nextEvolutions">
-            <v-pokemon-evolution-portrait
-                class="pokemon-evolutions-table__portrait"
-                v-for="evolution in nextEvolutions"
-                :key="evolution.id"
-                :pokemonData="getPokemonVariation(evolution, 0)"
-                @click="changeEvolution(evolution.id)"
-            />
-        </div>
-    </div>
+    </section>
 </template>
 
 <script lang="ts">
@@ -31,7 +34,7 @@ import Component from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import PokemonData from "@/classes/PokemonData";
 import PokemonEvolutionPortrait from "./PokemonEvolutionPortrait.vue";
-import PokemonSpeciesData from "../../classes/PokemonSpeciesData";
+import PokemonSpeciesData from "@/classes/PokemonSpeciesData";
 
 @Component({
     components: {
@@ -62,16 +65,14 @@ export default class PokemonEvolutions extends Vue {
 
     get nextEvolutions() {
         const evolutions = this.chain.slice(this.index + 1, this.chain.length);
-        if (evolutions.length > 0)
-            return evolutions;
+        if (evolutions.length > 0) return evolutions;
         return undefined;
     }
 
     changeEvolution(id: number) {
-        if (+this.$route.params.speciesId === id)
-            return;
+        if (+this.$route.params.speciesId === id) return;
         const params = {};
-        Object.assign(params, this.$route.params, {speciesId: id.toString()});
+        Object.assign(params, this.$route.params, { speciesId: id.toString() });
         this.$router.push({
             name: this.$route.name as string,
             params,

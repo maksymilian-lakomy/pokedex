@@ -35,6 +35,8 @@ import { Route, Next } from "vue-router";
 import { Filters } from "@/mixins/Filters.ts";
 import { Search } from "@/mixins/Search.ts";
 
+import { MetaInfo } from "vue-meta";
+
 interface OptionChangeEvent {
     filterKey: string;
     option: string;
@@ -45,6 +47,12 @@ Component.registerHooks(["beforeRouteEnter"]);
     components: {
         "v-pokemon-list": PokemonList,
         "v-pagination": ThePagination
+    },
+    metaInfo(): MetaInfo {
+        return {
+            title: 'Pokedex',
+            titleTemplate: undefined
+        }
     }
 })
 export default class Home extends Mixins(Filters, Search) {

@@ -142,6 +142,7 @@ export default class PokemonCard extends Mixins(StringFilters) {
         color: #707070
 
         &__label
+            cursor: pointer
             display: flex
             font-weight: bold
             align-items: center

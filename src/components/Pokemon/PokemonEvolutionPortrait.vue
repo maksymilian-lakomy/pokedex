@@ -13,17 +13,23 @@
                 'pokemon-evolution-portrait__img--main': isMain}"
             :src="hasSprite ? pokemonData.sprites.frontDefault : require('@/assets/pokemon-placeholder.png')"
         />
+        <transition name="slide">
+        <div class="pokemon-evolution-portrait__label" v-show="active && !isMain">
+            {{pokemonData.name | name}}
+        </div>
+        </transition>
     </div>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import { Prop } from "vue-property-decorator";
+import { Prop, Mixins } from "vue-property-decorator";
 import PokemonData from "@/classes/PokemonData";
+import { StringFilters } from '@/mixins/StringFilters';
 
 @Component
-export default class PokemonEvolutionPortrait extends Vue {
+export default class PokemonEvolutionPortrait extends Mixins(StringFilters) {
     @Prop(PokemonData)
     readonly pokemonData!: PokemonData;
 
@@ -48,6 +54,8 @@ export default class PokemonEvolutionPortrait extends Vue {
 .pokemon-evolution-portrait
     border-radius: 50%
     width: 100%
+    cursor: pointer
+    position: relative
 
     &__img
         opacity: $portrait-not-active-opacity
@@ -64,6 +72,28 @@ export default class PokemonEvolutionPortrait extends Vue {
     &__img--main
         opacity: 1
 
+    &__label
+        font-size: .8em
+        background-color: $light-gray
+        color: $darkest-gray
+        width: 100%
+        border-radius: .5em
+        padding: .25em 0
+        font-weight: bolder
+        text-align: center
+        position: absolute
+        bottom: 0
+
 .pokemon-evolution-portrait--main
     background-color: $light-gray
+    cursor: default !important
+
+.slide-enter-active, .slide-leave-active 
+    transition-duration: .25s
+    transform: translateY(0em)
+    opacity: 1
+
+.slide-enter, .slide-leave-to
+    transform: translateY(.25em)
+    opacity: 0
 </style>

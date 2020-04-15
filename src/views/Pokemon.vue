@@ -1,50 +1,27 @@
 <template>
     <div class="pokemon-overview">
-        <section class="pokemon-overview__description" v-if="currentVariety">
-            <div class="pokemon-overview__description__portrait">
-                <img
-                    class="pokemon-overview__description__portrait__img--placeholder"
-                    src="@/assets/pokemon-placeholder.png"
-                    v-if="!currentVariety.sprites.frontDefault"
-                />
-                <img
-                    v-else
-                    :src="currentVariety.sprites.frontDefault"
-                    :class="{'pokemon-overview__description__portrait__img--filter': filterPortrait}"
-                />
-            </div>
-            <h1>{{currentVariety.id | id}} {{currentVariety.name | name}}</h1>
+        <div class="pokemon-overview__left" v-if="currentVariety">
+            <v-pokemon-main :pokemonData="currentVariety" :filterPortrait="filterPortrait" />
             <v-pokemon-tags-list :pokemonData="currentVariety" />
             <v-pokemon-data-description :pokemonSpeciesData="currentEvolution" />
             <v-pokemon-abilities-list :pokemonData="currentVariety" />
-        </section>
-        <section class="pokemon-overview__overview" v-if="currentVariety">
+        </div>
+        <div class="pokemon-overview__center" v-if="currentVariety">
             <h1>Overview</h1>
             <v-pokemon-stats-list :pokemonData="currentVariety" />
             <v-pokemon-moves-list :pokemonData="currentVariety" />
-        </section>
-        <section class="pokemon-overview__species" v-if="currentEvolution">
-            <h1>Evolution</h1>
+        </div>
+        <div class="pokemon-overview__right" v-if="currentEvolution">
             <v-pokemon-evolutions
                 :chain="currentChain"
                 :index="currentIndex"
                 :varietyIndex="varietyIndex"
             />
-            <h1>Varieties</h1>
-            <ol class="pokemon-overview__species__varieties">
-                <li
-                    class="pokemon-overview__species__varieties__element"
-                    v-for="(variety, index) of currentEvolution.varieties"
-                    :key="variety.pokemonFull.id"
-                >
-                    <v-pokemon-variety-card
-                        :displayed="index === varietyIndex"
-                        @click="changeVariation(index)"
-                        :pokemonData="variety.pokemonFull"
-                    />
-                </li>
-            </ol>
-        </section>
+            <v-pokemon-variaties-list
+                :varieties="currentEvolution.varieties"
+                :currentVarietyIndex="varietyIndex"
+            />
+        </div>
     </div>
 </template>
 
@@ -61,27 +38,35 @@ import { StringFilters } from "@/mixins/StringFilters";
 import { Mixins } from "vue-property-decorator";
 import { parseQuery } from "@/mixins/parseQuery";
 
-import PokemonEvolutions from "@/components/Pokemon/PokemonEvolutions.vue";
+import { MetaInfo } from "vue-meta";
 
+import PokemonMain from "@/components/Pokemon/PokemonMain.vue";
+import PokemonEvolutions from "@/components/Pokemon/PokemonEvolutions.vue";
 import PokemonDataDescription from "@/components/Pokemon/PokemonDataDescription.vue";
 import PokemonAbilitiesList from "@/components/Pokemon/PokemonAbilitiesList.vue";
 import PokemonStatsList from "@/components/Pokemon/PokemonStatsList.vue";
 import PokemonMovesList from "@/components/Pokemon/PokemonMovesList.vue";
-import PokemonVarietyCard from "@/components/Pokemon/PokemonVarietyCard.vue";
+import PokemonVarietiesList from "@/components/Pokemon/PokemonVarietiesList.vue";
 import PokemonTagsList from "@/components/Pokemon/PokemonTagsList.vue";
 import PokemonData from "@/classes/PokemonData";
 
 Component.registerHooks(["beforeRouteEnter", "beforeRouteUpdate"]);
 
-@Component({
+@Component<Pokemon>({
     components: {
+        "v-pokemon-main": PokemonMain,
         "v-pokemon-data-description": PokemonDataDescription,
         "v-pokemon-abilities-list": PokemonAbilitiesList,
         "v-pokemon-stats-list": PokemonStatsList,
         "v-pokemon-moves-list": PokemonMovesList,
         "v-pokemon-evolutions": PokemonEvolutions,
-        "v-pokemon-variety-card": PokemonVarietyCard,
+        "v-pokemon-variaties-list": PokemonVarietiesList,
         "v-pokemon-tags-list": PokemonTagsList
+    },
+    metaInfo(): MetaInfo {
+        return {
+            title: this.name
+        };
     }
 })
 export default class Pokemon extends Mixins(StringFilters) {
@@ -118,27 +103,6 @@ export default class Pokemon extends Mixins(StringFilters) {
         window.scrollTo(0, 0);
         next();
     }
-    // --------------------------
-    // Navigation
-    // --------------------------
-    changeVariation(variety: number) {
-        if (variety === this.varietyIndex) return;
-        this.$router.push({
-            path: this.$route.path,
-            params: this.$route.params,
-            query: {
-                v: variety.toString()
-            }
-        });
-    }
-
-    changePage(index: number) {
-        this.$router.push({
-            params: {
-                speciesId: this.currentChain[index].id.toString()
-            }
-        });
-    }
 
     evolutionData: EvolutionData | null = null;
     currentChain = new Array<PokemonSpeciesData>();
@@ -148,6 +112,17 @@ export default class Pokemon extends Mixins(StringFilters) {
         const query = parseQuery(this.$route.query);
         if (!query.v) return 0;
         return +query.v;
+    }
+
+    // --------------------------
+    // Meta
+    // --------------------------
+    get name() {
+        return this.currentVariety?.name.replace(
+            /\w\S*/g,
+            string =>
+                string.charAt(0).toUpperCase() + string.substr(1).toLowerCase()
+        ).replace('-', ' ');
     }
 
     // --------------------------
@@ -234,43 +209,13 @@ export default class Pokemon extends Mixins(StringFilters) {
         grid-template-columns: repeat(1, 100%)      
         grid-template-areas: "description" "overview" "varieties"
 
-    &__description
+    &__left
         grid-area: description
         margin-top: 1.6em
 
-        &__tags
-            margin: 0
-            padding: 0
-            display: inline-block
-            &__element
-                list-style: none
-
-        &__portrait
-            width: 100%
-            text-align: center
-            background-color: $light-gray
-            border-radius: 1em
-            image-rendering: pixelated
-            img
-                width: 288px
-            &__img
-                &--placeholder
-                    opacity: $placeholder-opacity
-                &--filter
-                    image-rendering: auto
-
-    &__overview
+    &__center
         grid-area: overview
 
-    &__species
+    &__right
         grid-area: varieties
-        &__evolutions-table
-
-        &__varieties
-            width: 100%
-            padding: 0
-            margin: 0
-            &__element
-                list-style: none
-                margin-bottom: 1em
 </style>
