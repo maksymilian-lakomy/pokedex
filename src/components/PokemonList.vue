@@ -77,16 +77,8 @@ export default class PokemonList extends AsyncFlags {
 
     async loadPage(startPosition: number, limit: number) {
         EventBus.$emit("loading-species", true);
-        const newPokemons = new Array<PokemonSpeciesData>();
-        const condition = (i: number) =>
-            i < startPosition + limit && i < this.pokemonSpeciesList.length;
-        for (let i = startPosition; condition(i); i++) {
-            newPokemons.push(
-                await pokemonSpeciesService.getByUrl({
-                    url: this.$props.pokemonSpeciesList[i]
-                })
-            );
-        }
+        const promises = this.pokemonSpeciesList.slice(startPosition, startPosition+limit);
+        const newPokemons = await Promise.all(promises.map(value => pokemonSpeciesService.getByUrl({url: value})));
         EventBus.$emit("loading-species", false);
         return newPokemons;
     }
