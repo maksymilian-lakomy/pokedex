@@ -4,6 +4,9 @@
 npm start
 ```
 # PokéAPI
+## Update for 01.06.2020
+It's never too late for improvements right? Basically everything under this text is a absolutely invalid blaming. I should just load Pokemons in a non-linear way and that would fix JavaScript blocking. 
+
 ## Loading Pokémons list
 State for: 16.04.2020
 ### __Overview__
