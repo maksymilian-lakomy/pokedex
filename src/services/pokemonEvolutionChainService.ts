@@ -1,33 +1,35 @@
 import Service from './Service';
-import { AxiosResponse } from 'axios';
 
 const pokemonEndPoint = '/evolution-chain';
 
-import PokemonSpeciesData from '@/classes/PokemonSpeciesData';
-import EvolutionData from '@/classes/EvolutionData';
+import EvolutionData, { EvolutionApiData } from '@/classes/EvolutionData';
 import pokemonSpeciesService from './pokemonSpeciesService';
-
-
 
 interface GetEvolutionChain {
     evolutionChainId: string;
 }
 
+function mapEvolutionTree(map: Record<string, EvolutionData>, evolutionChain: EvolutionApiData, from?: string): void {
+    const evolvesTo = evolutionChain.evolves_to.map(evolution => evolution.species.name);
+    const evolutionData = new EvolutionData(evolutionChain.species.name, evolutionChain.species.url, evolvesTo, from);
+    map[evolutionData.name] = evolutionData;
+
+    evolutionChain.evolves_to.forEach(_evolutionChain => mapEvolutionTree(map, _evolutionChain, evolutionChain.species.name));
+}
 
 export default {
-    async getEvolutionData({evolutionChainId}: GetEvolutionChain): Promise<EvolutionData> {
-        const response: AxiosResponse = await Service.get(`${pokemonEndPoint}/${evolutionChainId}`);
-        if (response.status !== 200) 
-            throw response;
-        const result = new EvolutionData(response.data.chain);
-        return result;
+    async getEvolutionData({ evolutionChainId }: GetEvolutionChain): Promise<Record<string, EvolutionData>> {
+        const response = await Service.get(`${pokemonEndPoint}/${evolutionChainId}`);
+        const result = response.data.chain as EvolutionApiData;
+        const map: Record<string, EvolutionData> = {};
+        mapEvolutionTree(map, result);
+        return map;
     },
 
-    async getSpeciesFromEvolutionChain(evolutionData: EvolutionData): Promise<EvolutionData> {
-        evolutionData.speciesData = await pokemonSpeciesService.getByUrl({url: evolutionData.species.url, full: true});
-        for (const index in evolutionData.evolvesTo)
-            evolutionData.evolvesTo[index] = await this.getSpeciesFromEvolutionChain(evolutionData.evolvesTo[index]);
-        return evolutionData;
+    async getSpeciesFromEvolutionChain(map: Record<string, EvolutionData>): Promise<Record<string, EvolutionData>> {
+        const pokemonsData = await Promise.all(Object.values(map).map(evolutionData => pokemonSpeciesService.getByUrl({url: evolutionData.url, full: true})));
+        pokemonsData.forEach(pokemon => map[pokemon.name].speciesData = pokemon);
+        return map;
     }
 }
 

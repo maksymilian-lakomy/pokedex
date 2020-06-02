@@ -3,9 +3,7 @@ import { AxiosResponse } from 'axios';
 
 const pokemonEndPoint = '/pokemon';
 
-import { filters } from "@/enums/Filters";
 import PokemonSimpleData from '@/classes/PokemonSimpleData';
-import { Route } from 'vue-router';
 
 interface GetFilteredPokemonSpecies {
     filter: string;
@@ -35,56 +33,32 @@ interface FilterResponse {
 }
 
 export default {
-    async getFilteredPokemonSpecies(params: GetFilteredPokemonSpecies): Promise<Map<string, string>> {
-        const response: AxiosResponse = await Service.get(`${pokemonEndPoint}-${params.filter}/${params.option}`);
-        if (response.status !== 200) 
-            throw response;
+    async getFilteredPokemonSpecies({ filter, option }: GetFilteredPokemonSpecies): Promise<Record<string, string>> {
+        const response = await Service.get(`${pokemonEndPoint}-${filter}/${option}`);
 
-        const result = response.data as FilterSpeciesResponse;
-        const pokemonSpecies = new Map<string, string>();
-        result.pokemon_species.forEach(pokemon => {
-            pokemonSpecies.set(pokemon.name, pokemon.url);
-        });
+        const pokemonSpeciesResult = (response.data as FilterSpeciesResponse).pokemon_species;
+        const pokemonSpecies: Record<string, string> = {};
+
+        pokemonSpeciesResult.forEach(pokemon => pokemonSpecies[pokemon.name] = pokemon.url);
         return pokemonSpecies;
     },
 
-    async getAllFilteredPokemonSpecies({filter, options}: GetAllFilteredPokemonSpecies): Promise<Map<string, string>> {
-        let result = new Map<string, string>();
-        for await (const option of options) {
-            const pokemonSpieces = await this.getFilteredPokemonSpecies({filter, option});
-            result = new Map([...result, ...pokemonSpieces]);
-        }
-        return result;
+    async getAllFilteredPokemonSpecies({ filter, options }: GetAllFilteredPokemonSpecies): Promise<Record<string, string>> {
+        let pokemonSpecies: Record<string, string> = {};
+        const pokemonSpeciesArray = await Promise.all(options.map(option => this.getFilteredPokemonSpecies({filter, option})));
+        pokemonSpeciesArray.forEach(array => pokemonSpecies = {...pokemonSpecies, ...array});
+        console.log(pokemonSpecies);
+        return pokemonSpecies;
     },
 
-    async getFiltersIntersection({filters}: GetFiltersIntersection): Promise<Map<string, string>> {
-        let result = new Map<string, string>();
-        for (const filter in filters) {
-            if (filters[filter].length === 0)
-                continue;
-            const allPokemonSpieces = await this.getAllFilteredPokemonSpecies({filter, options: filters[filter]});
-            if (result.size === 0) {
-                result = allPokemonSpieces;
-            } else {
-                result = new Map([...result].filter(pokemonSpecies => allPokemonSpieces.has(pokemonSpecies[0])));
-            }
-        }
-        return result;
-    },
-
-    async getOptions({filter}: GetFilterOptions): Promise<Array<string>> {
+    async getOptions({ filter }: GetFilterOptions): Promise<Array<string>> {
         const response: AxiosResponse = await Service.get(`${pokemonEndPoint}-${filter}?limit=1`);
-        if (response.status !== 200)
-            throw response;
+        const count = (response.data as FilterResponse).count;
 
-        let result = response.data as FilterResponse;
-        const finalResponse = await Service.get(`${pokemonEndPoint}-${filter}?limit=${result.count}`);
-        if (finalResponse.status !== 200)
-            throw response;
+        const finalResponse = await Service.get(`${pokemonEndPoint}-${filter}?limit=${count}`);
+        const results = (finalResponse.data as FilterResponse).results;
 
-        result = finalResponse.data as FilterResponse;
-        const options: string[] = [];
-        result.results.forEach(option => options.push(option.name));
+        const options = results.map(option => option.name);
         return options;
     },
 }
