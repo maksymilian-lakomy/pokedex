@@ -28,15 +28,15 @@ async function getFullSpecies(pokemonSpeciesData: PokemonSpeciesData, full?: boo
 }
 
 export default {
-    async getMap(): Promise<Map<string, string>> {
+    async getMap(): Promise<Record<string, string>> {
         const limitResponse = await Service.get(`${pokemonEndPoint}?limit=1`);
         const limit = (limitResponse.data as PageResponse<PokemonSimpleData>).count;
 
         const pokemonMapResponse = await Service.get(`${pokemonEndPoint}?limit=${limit}`);
         const pokemonsResults = (pokemonMapResponse.data as PageResponse<PokemonSimpleData>).results;
 
-        const pokemonSpeciesMap = new Map<string, string>();
-        pokemonsResults.forEach(pokemon => pokemonSpeciesMap.set(pokemon.name, pokemon.url));
+        const pokemonSpeciesMap: Record<string, string> = {};
+        pokemonsResults.forEach(pokemon => pokemonSpeciesMap[pokemon.name] = pokemon.url);
 
         return pokemonSpeciesMap;
 

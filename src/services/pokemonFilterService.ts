@@ -47,7 +47,6 @@ export default {
         let pokemonSpecies: Record<string, string> = {};
         const pokemonSpeciesArray = await Promise.all(options.map(option => this.getFilteredPokemonSpecies({filter, option})));
         pokemonSpeciesArray.forEach(array => pokemonSpecies = {...pokemonSpecies, ...array});
-        console.log(pokemonSpecies);
         return pokemonSpecies;
     },
 

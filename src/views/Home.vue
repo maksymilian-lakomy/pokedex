@@ -15,56 +15,56 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
-import Component from "vue-class-component";
-import { parseQuery } from "@/mixins/parseQuery";
+import Vue from 'vue';
+import Component from 'vue-class-component';
+import { parseQuery } from '@/mixins/parseQuery';
 
-import ThePagination from "@/components/ThePagination.vue";
+import ThePagination from '@/components/ThePagination.vue';
 
-import PokemonList from "@/components/PokemonList.vue";
+import PokemonList from '@/components/PokemonList.vue';
 
-import pokemonFilterService from "@/services/pokemonFilterService";
-import pokemonSpeciesService from "@/services/pokemonSpeciesService";
-import PokemonSpeciesData from "../classes/PokemonSpeciesData";
+import pokemonFilterService from '@/services/pokemonFilterService';
+import pokemonSpeciesService from '@/services/pokemonSpeciesService';
+import PokemonSpeciesData from '../classes/PokemonSpeciesData';
 
-import { EventBus } from "@/events/EventBus";
-import { Watch, Mixins } from "vue-property-decorator";
+import { EventBus } from '@/events/EventBus';
+import { Watch, Mixins } from 'vue-property-decorator';
 
-import { Route, Next } from "vue-router";
+import { Route, Next } from 'vue-router';
 
-import { Filters } from "@/mixins/Filters.ts";
-import { Search } from "@/mixins/Search.ts";
+import { Filters } from '@/mixins/Filters.ts';
+import { Search } from '@/mixins/Search.ts';
 
-import { MetaInfo } from "vue-meta";
+import { MetaInfo } from 'vue-meta';
 
 interface OptionChangeEvent {
     filterKey: string;
     option: string;
 }
-Component.registerHooks(["beforeRouteEnter"]);
+Component.registerHooks(['beforeRouteEnter']);
 
 @Component({
     components: {
-        "v-pokemon-list": PokemonList,
-        "v-pagination": ThePagination
+        'v-pokemon-list': PokemonList,
+        'v-pagination': ThePagination
     },
     metaInfo(): MetaInfo {
         return {
             title: 'Pokedex',
             titleTemplate: undefined
-        }
+        };
     }
 })
 export default class Home extends Mixins(Filters, Search) {
     pokemonSpeciesList = new Array<string>();
-    @Watch("pokemonSpeciesList")
+    @Watch('pokemonSpeciesList')
     onPokemonSpeciesListChange() {
         const availablePage = this.checkPageBoundary(this.currentPage);
         if (availablePage !== this.currentPage) this.setPage(availablePage);
     }
 
     page = {
-        limit: 20,
+        limit: 50,
         offset: 0
     };
 
@@ -84,7 +84,7 @@ export default class Home extends Mixins(Filters, Search) {
         return +query.p;
     }
 
-    @Watch("currentPage")
+    @Watch('currentPage')
     onCurrentPageChange() {
         this.calculateOffset();
     }
@@ -117,12 +117,12 @@ export default class Home extends Mixins(Filters, Search) {
         else return page;
     }
 
-    @Watch("search")
+    @Watch('search')
     onSearchChange() {
         this.reload();
     }
 
-    @Watch("activeFilters")
+    @Watch('activeFilters')
     onActiveFiltersChange() {
         this.reload();
     }
@@ -132,28 +132,52 @@ export default class Home extends Mixins(Filters, Search) {
     // --------------------------
     async reload() {
         window.scrollTo(0, 0);
-        EventBus.$emit("loading-species-list", true);
+        EventBus.$emit('loading-species-list', true);
         this.pokemonSpeciesList = await this.loadPokemonSpeciesList();
-        EventBus.$emit("loading-species-list", false);
+        EventBus.$emit('loading-species-list', false);
     }
 
     async loadPokemonSpeciesList(): Promise<Array<string>> {
-        let pokemonSpeciesMap = new Map<string, string>();
-        const activeOptionsCheck = () => {
-            for (const options in this.activeFilters)
-                if (this.activeFilters[options].length > 0) return true;
-            return false;
-        };
-        pokemonSpeciesMap = activeOptionsCheck()
-            ? await pokemonFilterService.getFiltersIntersection({
-                  filters: this.activeFilters
-              })
+        const pokemonSpeciesMap = this.hasActiveFilters
+            ? await this.pokemonsByFilterIntersection()
             : await pokemonSpeciesService.getMap();
-        pokemonSpeciesMap.forEach((value, key) => {
-            if (this.search && !key.startsWith(this.search.toLowerCase()))
-                pokemonSpeciesMap.delete(key);
-        });
-        return [...pokemonSpeciesMap.values()];
+        this.searchFilter(pokemonSpeciesMap);
+        return Object.values(pokemonSpeciesMap);
+    }
+
+    searchFilter(map: Record<string, string>): void {
+        if (!this.search) return;
+        for (const name in map) {
+            if (!name.startsWith(this.search.toLowerCase().split(' ').join('-'))) delete map[name];
+        }
+    }
+
+    async pokemonsByFilterIntersection(): Promise<Record<string, string>> {
+        // Still kinda messy
+        const filterKeys = Object.keys(this.activeFilters);
+        const results = await Promise.all(
+            filterKeys.map(filter =>
+                pokemonFilterService.getAllFilteredPokemonSpecies({
+                    filter,
+                    options: this.activeFilters[filter]
+                })
+            )
+        );
+        for (let i = 1; i < results.length; i++) 
+            this.intersection(results[0], results[i]);
+        return {...results[0]};
+    }
+
+    intersection(obj1: Record<string, string>, obj2: Record<string, string>): void {
+        for (const name in obj1)
+            if (obj2[name] === undefined)
+                delete obj1[name];
+    }
+
+    get hasActiveFilters() {
+        for (const options in this.activeFilters)
+            if (this.activeFilters[options].length !== 0) return true;
+        return false;
     }
 
     // --------------------------
@@ -161,7 +185,7 @@ export default class Home extends Mixins(Filters, Search) {
     // --------------------------
     cardClicked(event: PokemonSpeciesData) {
         this.$router.push({
-            name: "Pokemon",
+            name: 'Pokemon',
             params: {
                 speciesId: event.id.toString(),
                 evolution: event.evolutionChain.toString()

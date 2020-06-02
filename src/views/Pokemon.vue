@@ -26,42 +26,42 @@
 </template>
 
 <script lang="ts">
-import Component from "vue-class-component";
+import Component from 'vue-class-component';
 
-import { Route, Next } from "vue-router";
+import { Route, Next } from 'vue-router';
 
-import pokemonEvolutionChainService from "@/services/pokemonEvolutionChainService";
-import EvolutionData from "@/classes/EvolutionData";
-import PokemonSpeciesData from "@/classes/PokemonSpeciesData";
+import pokemonEvolutionChainService from '@/services/pokemonEvolutionChainService';
+import EvolutionData from '@/classes/EvolutionData';
+import PokemonSpeciesData from '@/classes/PokemonSpeciesData';
 
-import { StringFilters } from "@/mixins/StringFilters";
-import { Mixins } from "vue-property-decorator";
-import { parseQuery } from "@/mixins/parseQuery";
+import { StringFilters } from '@/mixins/StringFilters';
+import { Mixins } from 'vue-property-decorator';
+import { parseQuery } from '@/mixins/parseQuery';
 
-import { MetaInfo } from "vue-meta";
+import { MetaInfo } from 'vue-meta';
 
-import PokemonMain from "@/components/Pokemon/PokemonMain.vue";
-import PokemonEvolutions from "@/components/Pokemon/PokemonEvolutions.vue";
-import PokemonDataDescription from "@/components/Pokemon/PokemonDataDescription.vue";
-import PokemonAbilitiesList from "@/components/Pokemon/PokemonAbilitiesList.vue";
-import PokemonStatsList from "@/components/Pokemon/PokemonStatsList.vue";
-import PokemonMovesList from "@/components/Pokemon/PokemonMovesList.vue";
-import PokemonVarietiesList from "@/components/Pokemon/PokemonVarietiesList.vue";
-import PokemonTagsList from "@/components/Pokemon/PokemonTagsList.vue";
-import PokemonData from "@/classes/PokemonData";
+import PokemonMain from '@/components/Pokemon/PokemonMain.vue';
+import PokemonEvolutions from '@/components/Pokemon/PokemonEvolutions.vue';
+import PokemonDataDescription from '@/components/Pokemon/PokemonDataDescription.vue';
+import PokemonAbilitiesList from '@/components/Pokemon/PokemonAbilitiesList.vue';
+import PokemonStatsList from '@/components/Pokemon/PokemonStatsList.vue';
+import PokemonMovesList from '@/components/Pokemon/PokemonMovesList.vue';
+import PokemonVarietiesList from '@/components/Pokemon/PokemonVarietiesList.vue';
+import PokemonTagsList from '@/components/Pokemon/PokemonTagsList.vue';
+import PokemonData from '@/classes/PokemonData';
 
-Component.registerHooks(["beforeRouteEnter", "beforeRouteUpdate"]);
+Component.registerHooks(['beforeRouteEnter', 'beforeRouteUpdate']);
 
 @Component<Pokemon>({
     components: {
-        "v-pokemon-main": PokemonMain,
-        "v-pokemon-data-description": PokemonDataDescription,
-        "v-pokemon-abilities-list": PokemonAbilitiesList,
-        "v-pokemon-stats-list": PokemonStatsList,
-        "v-pokemon-moves-list": PokemonMovesList,
-        "v-pokemon-evolutions": PokemonEvolutions,
-        "v-pokemon-variaties-list": PokemonVarietiesList,
-        "v-pokemon-tags-list": PokemonTagsList
+        'v-pokemon-main': PokemonMain,
+        'v-pokemon-data-description': PokemonDataDescription,
+        'v-pokemon-abilities-list': PokemonAbilitiesList,
+        'v-pokemon-stats-list': PokemonStatsList,
+        'v-pokemon-moves-list': PokemonMovesList,
+        'v-pokemon-evolutions': PokemonEvolutions,
+        'v-pokemon-variaties-list': PokemonVarietiesList,
+        'v-pokemon-tags-list': PokemonTagsList
     },
     metaInfo(): MetaInfo {
         return {
@@ -118,11 +118,14 @@ export default class Pokemon extends Mixins(StringFilters) {
     // Meta
     // --------------------------
     get name() {
-        return this.currentVariety?.name.replace(
-            /\w\S*/g,
-            string =>
-                string.charAt(0).toUpperCase() + string.substr(1).toLowerCase()
-        ).replace('-', ' ');
+        return this.currentVariety?.name
+            .replace(
+                /\w\S*/g,
+                string =>
+                    string.charAt(0).toUpperCase() +
+                    string.substr(1).toLowerCase()
+            )
+            .replace('-', ' ');
     }
 
     // --------------------------
@@ -183,7 +186,7 @@ export default class Pokemon extends Mixins(StringFilters) {
     get filterPortrait() {
         if (!this.currentEvolution) return false;
         return (
-            ["generation-vii", "generation-viii"].indexOf(
+            ['generation-vii', 'generation-viii'].indexOf(
                 this.currentEvolution?.generation.name
             ) !== -1
         );
