@@ -42,6 +42,9 @@ export default class App extends Vue {}
 body
     margin: 0
 
+a
+    text-decoration: none
+
 #app
     font-family: 'Roboto', sans-serif
     display: flex

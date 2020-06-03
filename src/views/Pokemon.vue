@@ -1,25 +1,25 @@
 <template>
-    <div class="pokemon-overview">
-        <div class="pokemon-overview__left" v-if="currentVariety">
+    <div class="pokemon-overview" v-if="currentVariety">
+        <div class="pokemon-overview__left">
             <v-pokemon-main :pokemonData="currentVariety" :filterPortrait="filterPortrait" />
             <v-pokemon-tags-list :pokemonData="currentVariety" />
-            <v-pokemon-data-description :pokemonSpeciesData="currentEvolution" />
+            <v-pokemon-data-description :pokemonSpeciesData="currentSpecies" />
             <v-pokemon-abilities-list :pokemonData="currentVariety" />
         </div>
-        <div class="pokemon-overview__center" v-if="currentVariety">
+        <div class="pokemon-overview__center">
             <h1>Overview</h1>
             <v-pokemon-stats-list :pokemonData="currentVariety" />
             <v-pokemon-moves-list :pokemonData="currentVariety" />
         </div>
-        <div class="pokemon-overview__right" v-if="currentEvolution">
+        <div class="pokemon-overview__right" v-if="currentSpecies">
             <v-pokemon-evolutions
-                :chain="currentChain"
-                :index="currentIndex"
-                :varietyIndex="varietyIndex"
+                :chain="evolutionData"
+                :name="currentName"
+                :variation="variety"
             />
             <v-pokemon-variaties-list
-                :varieties="currentEvolution.varieties"
-                :currentVarietyIndex="varietyIndex"
+                :varieties="currentSpecies.varieties"
+                :currentVarietyIndex="variety"
             />
         </div>
     </div>
@@ -62,132 +62,53 @@ Component.registerHooks(['beforeRouteEnter', 'beforeRouteUpdate']);
         'v-pokemon-evolutions': PokemonEvolutions,
         'v-pokemon-variaties-list': PokemonVarietiesList,
         'v-pokemon-tags-list': PokemonTagsList
-    },
-    metaInfo(): MetaInfo {
-        return {
-            title: this.name
-        };
     }
 })
 export default class Pokemon extends Mixins(StringFilters) {
+    evolutionData: Record<string, EvolutionData> | null = null;
+
     async beforeRouteEnter(to: Route, from: Route, next: Next<Pokemon>) {
-        let evolutionData = await pokemonEvolutionChainService.getEvolutionData(
-            { evolutionChainId: to.params.evolution }
-        );
-        evolutionData = await pokemonEvolutionChainService.getSpeciesFromEvolutionChain(
-            evolutionData
-        );
-        next(vm => {
-            vm.evolutionData = evolutionData;
-            vm.getPokemonSpecies(
-                +to.params.speciesId,
+        try {
+            const evolutionData = await pokemonEvolutionChainService.getEvolutionData(
+                { evolutionChainId: to.params.evolution }
+            );
+            await pokemonEvolutionChainService.getSpeciesFromEvolutionChain(
                 evolutionData
-            ).forEach((pokemonSpecies, i) =>
-                vm.$set(vm.currentChain, i, pokemonSpecies)
             );
-            vm.setCurrentIndex(+to.params.speciesId);
-            window.scrollTo(0, 0);
-        });
-    }
-
-    beforeRouteUpdate(to: Route, from: Route, next: Next<Pokemon>) {
-        this.currentChain = [];
-        if (this.evolutionData)
-            this.getPokemonSpecies(
-                +to.params.speciesId,
-                this.evolutionData
-            ).forEach((pokemonSpecies, i) => {
-                this.$set(this.currentChain, i, pokemonSpecies);
+            next(vm => {
+                console.log('test');
+                vm.evolutionData = evolutionData;
             });
-        this.setCurrentIndex(+to.params.speciesId);
-        window.scrollTo(0, 0);
-        next();
-    }
-
-    evolutionData: EvolutionData | null = null;
-    currentChain = new Array<PokemonSpeciesData>();
-    currentIndex = 0;
-
-    get varietyIndex(): number {
-        const query = parseQuery(this.$route.query);
-        if (!query.v) return 0;
-        return +query.v;
-    }
-
-    // --------------------------
-    // Meta
-    // --------------------------
-    get name() {
-        return this.currentVariety?.name
-            .replace(
-                /\w\S*/g,
-                string =>
-                    string.charAt(0).toUpperCase() +
-                    string.substr(1).toLowerCase()
-            )
-            .replace('-', ' ');
-    }
-
-    // --------------------------
-    // Pokemon Species Portraits
-    // --------------------------
-    setCurrentIndex(speciesId: number) {
-        this.currentIndex = this.currentChain.findIndex(
-            pokemonSpecies => pokemonSpecies.id === +speciesId
-        );
-    }
-
-    get currentEvolution(): PokemonSpeciesData | undefined {
-        return this.currentChain[this.currentIndex];
-    }
-
-    get currentVariety(): PokemonData | undefined {
-        if (this.currentEvolution)
-            return this.getPokemonVariation(
-                this.currentEvolution,
-                this.varietyIndex
-            );
-        return undefined;
-    }
-
-    getPokemonVariation(pokemonSpecies: PokemonSpeciesData, index: number) {
-        return pokemonSpecies.varieties[index].pokemonFull;
-    }
-
-    getPokemonSpecies(
-        id: number,
-        evolutionData: EvolutionData
-    ): Array<PokemonSpeciesData> {
-        let tree = new Array<PokemonSpeciesData>();
-        if (
-            evolutionData?.evolvesTo !== undefined &&
-            evolutionData.speciesData?.id !== id
-        ) {
-            for (const _evolutionData of evolutionData.evolvesTo) {
-                tree = this.getPokemonSpecies(id, _evolutionData);
-                if (tree.length !== 0 && evolutionData.speciesData) {
-                    tree = [evolutionData.speciesData, ...tree];
-                    return tree;
-                }
-            }
-            return tree;
-        } else if (evolutionData.speciesData?.id === id) {
-            tree.push(evolutionData.speciesData);
-            evolutionData.evolvesTo?.reduce((result, evolution) => {
-                if (evolution.speciesData) result.push(evolution.speciesData);
-                return result;
-            }, tree);
-            return tree;
-        } else {
-            return tree;
+        } catch (e) {
+            console.error(e);
         }
     }
 
+    get currentVariety(): PokemonData | null {
+        if (this.currentSpecies === null) return null;
+        return this.currentSpecies.varieties[this.variety].pokemonFull!;
+    }
+
+    get currentName(): string | null{
+        if (this.evolutionData === null) return null;
+        return Object.values(this.evolutionData).find(evolutionData => evolutionData.speciesData!.id === parseInt(this.$route.params.speciesId))!.name;
+    }
+
+    get currentSpecies(): PokemonSpeciesData | null {
+        if (this.evolutionData === null || this.currentName === null) return null;
+        return this.evolutionData[this.currentName].speciesData!;
+    }
+
+    get variety(): number {
+        const queries = parseQuery(this.$route.query);
+        return queries['v'] ? parseInt(queries['v'][0]) : 0;
+    }
+
     get filterPortrait() {
-        if (!this.currentEvolution) return false;
+        if (!this.currentSpecies) return false;
         return (
-            ['generation-vii', 'generation-viii'].indexOf(
-                this.currentEvolution?.generation.name
+            ['generation-vii', 'getneration-viii'].indexOf(
+                this.currentSpecies!.generation.name
             ) !== -1
         );
     }

@@ -3,14 +3,20 @@
         <!-- <div class="pokemon-list__loading" v-if="loading" /> -->
         <div v-if="pokemonSpecies.length === 0">No pokemons found.</div>
         <ol class="pokemon-list__listing" v-else>
-            <v-pokemon-card
-                @click="$emit('click-card', $event)"
-                class="pokemon-list__listing__card"
+            <router-link
                 v-for="pokemon in pokemonSpeciesSorted"
                 :key="pokemon.id"
-                :pokemonSpecies="pokemon"
-                :variety="0"
-            />
+                :to="{name: 'Pokemon', params: {
+                    evolution: pokemon.evolutionChain,
+                    speciesId: pokemon.id
+                }}"
+            >
+                <v-pokemon-card
+                    class="pokemon-list__listing__card"
+                    :pokemonSpecies="pokemon"
+                    :variety="0"
+                />
+            </router-link>
         </ol>
     </div>
 </template>
@@ -18,7 +24,7 @@
 <script lang="ts">
 import Vue from 'vue';
 import Component from 'vue-class-component';
-import { Watch, Prop } from 'vue-property-decorator';
+import { Watch } from 'vue-property-decorator';
 
 import pokemonSpeciesService from '@/services/pokemonSpeciesService';
 import PokemonSpeciesData from '@/classes/PokemonSpeciesData';

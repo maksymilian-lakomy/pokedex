@@ -15,10 +15,6 @@ export class PokemonsSpeciesList {
     private _filters: Record<string, Array<string>> | null = null;
     private _search = '';
 
-    constructor() {
-        this.reloadSpeciesList();
-    }
-
     public get pokemonsUrls(): Array<string> {
         const search = this._search.toLowerCase().split(' ').join('-');
         const names = Object.keys(this._pokemonsSpeciesUrls);
@@ -67,7 +63,6 @@ export class PokemonsSpeciesList {
     }
 
     private reloadSpeciesList() {
-        console.log((this._filters !== null && Object.keys(this._filters).filter(options => options.length > 0).length > 0));
         if (this._filters !== null && Object.keys(this._filters).filter(options => options.length > 0).length > 0)
             this.loadPokemonsSpeciesMapWithFilters();
         else

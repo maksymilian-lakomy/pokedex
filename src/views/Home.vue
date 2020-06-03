@@ -1,7 +1,7 @@
 <template>
     <div class="home">
-        <v-pagination @change-page="setPage($event)" />
-        <v-pokemon-list @click-card="cardClicked($event)" />
+        <v-pagination />
+        <v-pokemon-list />
     </div>
 </template>
 
@@ -11,29 +11,18 @@ import Component from 'vue-class-component';
 import { parseQuery } from '@/mixins/parseQuery';
 
 import ThePagination from '@/components/ThePagination.vue';
-
 import PokemonList from '@/components/PokemonList.vue';
 
-import pokemonFilterService from '@/services/pokemonFilterService';
-import pokemonSpeciesService from '@/services/pokemonSpeciesService';
-import PokemonSpeciesData from '../classes/PokemonSpeciesData';
-
-import { EventBus } from '@/events/EventBus';
-import { Watch, Mixins } from 'vue-property-decorator';
-
+import PokemonSpeciesData from '@/classes/PokemonSpeciesData';
 import { Route, Next } from 'vue-router';
-
-import { Filters } from '@/mixins/Filters.ts';
-import { Search } from '@/mixins/Search.ts';
 
 import { MetaInfo } from 'vue-meta';
 
 import { getModule, PokemonsModule } from '@/store/pokemons/module';
 
+import { filters as availableFilters } from '@/enums/Filters';
+
 Component.registerHooks(['beforeRouteEnter', 'beforeRouteUpdate']);
-
-import { filters as availableFilters } from "@/enums/Filters";
-
 @Component({
     components: {
         'v-pokemon-list': PokemonList,
@@ -46,7 +35,7 @@ import { filters as availableFilters } from "@/enums/Filters";
         };
     }
 })
-export default class Home extends Mixins(Filters, Search) {
+export default class Home extends Vue {
     readonly pokemonsStore = getModule(PokemonsModule, this.$store);
 
     beforeRouteEnter(to: Route, from: Route, next: Next<Home>) {
@@ -60,19 +49,22 @@ export default class Home extends Mixins(Filters, Search) {
         next();
     }
 
-    setUpStore(route: Route) {
-        const queries = parseQuery(route.query);
+    setUpStore(next: Route) {
+        // ADD CHECK FOR SAME FILTERS
+        const queries = parseQuery(next.query);
+
         const page = queries['p'] ? parseInt(queries['p'][0]) : 1;
+        const search = queries['search'] ? queries['search'][0] : null;
         const filters: Record<string, Array<string>> = {};
+
         for (const query in queries)
             if (availableFilters.includes(query))
                 filters[query] = queries[query];
-        const search = queries['search'] ? queries['search'][0] : null;
+
         this.pokemonsStore.setFilters(filters);
         this.pokemonsStore.setPage(page);
         this.pokemonsStore.setSearch(search);
     }
-
 
     cardClicked(event: PokemonSpeciesData) {
         this.$router.push({

@@ -10,12 +10,12 @@
             </div>
             <div class="pokemon-evolutions-table__current" v-if="currentEvolution">
                 <v-pokemon-evolution-portrait
-                    :pokemonData="getPokemonVariation(currentEvolution, varietyIndex)"
+                    :pokemonData="getPokemonVariation(currentSpecies, variation)"
                     :isMain="true"
-                    @click="changeEvolution(currentEvolution.id)"
+                    @click="changeEvolution(currentSpecies.id)"
                 />
             </div>
-            <div class="pokemon-evolutions-table__next" v-if="nextEvolutions">
+            <div class="pokemon-evolutions-table__next" v-if="nextEvolutions && nextEvolutions.length > 0">
                 <v-pokemon-evolution-portrait
                     class="pokemon-evolutions-table__portrait"
                     v-for="evolution in nextEvolutions"
@@ -35,6 +35,7 @@ import { Prop } from "vue-property-decorator";
 import PokemonData from "@/classes/PokemonData";
 import PokemonEvolutionPortrait from "./PokemonEvolutionPortrait.vue";
 import PokemonSpeciesData from "@/classes/PokemonSpeciesData";
+import EvolutionData from '@/classes/EvolutionData';
 
 @Component({
     components: {
@@ -42,31 +43,33 @@ import PokemonSpeciesData from "@/classes/PokemonSpeciesData";
     }
 })
 export default class PokemonEvolutions extends Vue {
-    @Prop(Array)
-    readonly chain!: Array<PokemonSpeciesData>;
+    @Prop({type: Object, required: true})
+    readonly chain!: Record<string, EvolutionData>;
 
-    @Prop(Number)
-    readonly index!: number;
+    @Prop({type: String, required: true})
+    readonly name!: string;
 
-    @Prop(Number)
-    readonly varietyIndex!: number;
+    @Prop({type: Number, required: true})
+    readonly variation!: number;
 
     // --------------------------
     // Pokemon Evolutions
     // --------------------------
-    get previousEvolution() {
-        if (this.index > 0) return this.chain[this.index - 1];
-        return undefined;
+    get previousEvolution(): PokemonSpeciesData | null {
+        if (this.currentEvolution.evolvesFrom === undefined) return null; 
+        return this.chain[this.currentEvolution.evolvesFrom].speciesData!;
     }
 
-    get currentEvolution() {
-        return this.chain[this.index];
+    get currentSpecies(): PokemonSpeciesData {
+        return this.currentEvolution.speciesData!;
     }
 
-    get nextEvolutions() {
-        const evolutions = this.chain.slice(this.index + 1, this.chain.length);
-        if (evolutions.length > 0) return evolutions;
-        return undefined;
+    get currentEvolution(): EvolutionData {
+        return this.chain[this.name];
+    }
+
+    get nextEvolutions(): Array<PokemonSpeciesData> {
+        return this.currentEvolution.evolvesTo.map(name => this.chain[name].speciesData!);
     }
 
     changeEvolution(id: number) {
@@ -81,6 +84,7 @@ export default class PokemonEvolutions extends Vue {
     }
 
     getPokemonVariation(pokemonSpecies: PokemonSpeciesData, index: number) {
+        console.log(pokemonSpecies, index);
         if (pokemonSpecies !== undefined)
             return pokemonSpecies.varieties[index].pokemonFull;
         return undefined;
