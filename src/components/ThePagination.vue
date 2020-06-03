@@ -16,48 +16,38 @@
         </li>
         <li
             class="list__element list__element__page-number list__element__page-number--count"
-        >/  {{pageAmount.toString() | numeric}}</li>
+        >/ {{pageAmount.toString() | numeric}}</li>
     </ol>
 </template>
 
 <script lang="ts">
-import Vue from "vue";
-import { Component, Prop, Mixins } from "vue-property-decorator";
-import { EventBus } from "@/events/EventBus";
+import Vue from 'vue';
+import { Component, Prop, Mixins } from 'vue-property-decorator';
+import { EventBus } from '@/events/EventBus';
 
-import { AsyncFlags } from "@/mixins/AsyncFlags";
-import { parseQuery } from "@/mixins/parseQuery";
+import { AsyncFlags } from '@/mixins/AsyncFlags';
+import { parseQuery } from '@/mixins/parseQuery';
+
+import { PokemonsModule, getModule } from '@/store/pokemons/module';
 
 @Component({
     filters: {
         numeric(value: string) {
-            if (typeof value !== "string") return;
+            if (typeof value !== 'string') return;
             while (value.length < 2) value = `0${value}`;
             return value;
         }
     }
 })
 export default class ThePagination extends Mixins(AsyncFlags) {
-    @Prop(Number)
-    readonly currentPage!: number;
+    readonly pokemonsStore = getModule(PokemonsModule, this.$store);
 
-    @Prop(Number)
-    readonly pageAmount!: number;
+    get currentPage(): number {
+        return this.pokemonsStore.currentPage;
+    }
 
-    flags = {
-        loadingSpeciesList: false,
-        loadingSpecies: false
-    };
-
-    created() {
-        EventBus.$on(
-            "loading-species-list",
-            (event: boolean) => (this.flags.loadingSpeciesList = event)
-        );
-        EventBus.$on(
-            "loading-species",
-            (event: boolean) => (this.flags.loadingSpecies = event)
-        );
+    get pageAmount(): number {
+        return this.pokemonsStore.pageAmount;
     }
 
     get pages() {
@@ -73,7 +63,6 @@ export default class ThePagination extends Mixins(AsyncFlags) {
     }
 
     setPage(page: number) {
-        if (!this.canPerformAsyncOperation()) return;
         const query = parseQuery(this.$route.query);
         if (query.p && query.p.includes(page.toString())) return;
         query.p = [page.toString()];

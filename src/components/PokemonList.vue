@@ -1,7 +1,7 @@
 <template>
     <div class="pokemon-list">
-        <div class="pokemon-list__loading" v-show="allFlagsFalse" />
-        <div v-if="!allFlagsFalse && (pokemonSpecies.length === 0 )">No pokemons found.</div>
+        <!-- <div class="pokemon-list__loading" v-if="loading" /> -->
+        <div v-if="pokemonSpecies.length === 0">No pokemons found.</div>
         <ol class="pokemon-list__listing" v-else>
             <v-pokemon-card
                 @click="$emit('click-card', $event)"
@@ -16,71 +16,42 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
-import Component from "vue-class-component";
-import { Watch, Prop } from "vue-property-decorator";
+import Vue from 'vue';
+import Component from 'vue-class-component';
+import { Watch, Prop } from 'vue-property-decorator';
 
-import pokemonSpeciesService from "@/services/pokemonSpeciesService";
-import PokemonSpeciesData from "@/classes/PokemonSpeciesData";
+import pokemonSpeciesService from '@/services/pokemonSpeciesService';
+import PokemonSpeciesData from '@/classes/PokemonSpeciesData';
 
-import PokemonCard from "@/components/PokemonCard.vue";
+import PokemonCard from '@/components/PokemonCard.vue';
 
-import { EventBus } from "@/events/EventBus";
-
-import { AsyncFlags } from "@/mixins/AsyncFlags";
+import { getModule, PokemonsModule } from '@/store/pokemons/module';
 
 @Component({
     components: {
-        "v-pokemon-card": PokemonCard
+        'v-pokemon-card': PokemonCard
     }
 })
-export default class PokemonList extends AsyncFlags {
-    @Prop(Array)
-    readonly pokemonSpeciesList!: Array<string>;
+export default class PokemonList extends Vue {
+    readonly pokemonsStore = getModule(PokemonsModule, this.$store);
 
-    @Prop(Number)
-    readonly limit!: number;
+    get pokemonSpeciesList(): Array<string> {
+        return this.pokemonsStore.pokemonsUrls;
+    }
 
-    @Prop(Number)
-    readonly offset!: number;
+    @Watch('pokemonSpeciesList')
+    async onPokemonSpeciesListChange(array: Array<string>) {
+        this.pokemonSpecies = await Promise.all(
+            array.map(url => pokemonSpeciesService.getByUrl({ url }))
+        );
+    }
 
     pokemonSpecies = new Array<PokemonSpeciesData>();
-    flags = {
-        loadingSpeciesList: false,
-        loadingSpecies: false
-    };
 
     get pokemonSpeciesSorted() {
         return this.pokemonSpecies.sort(
             (a: PokemonSpeciesData, b: PokemonSpeciesData) => a.id - b.id
         );
-    }
-
-    get allFlagsFalse() {
-        return this.flags.loadingSpeciesList || this.flags.loadingSpecies;
-    }
-
-    @Watch("offset")
-    async onPageChange() {
-        if (this.canPerformAsyncOperation())
-            this.pokemonSpecies = await this.loadPage(this.offset, this.limit);
-    }
-
-    @Watch("pokemonSpeciesList")
-    async onPokemonSpeciesListChange() {
-        if (this.canPerformAsyncOperation())
-            this.pokemonSpecies = await this.loadPage(
-                this.$props.offset,
-                this.$props.limit
-            );
-    }
-
-    async loadPage(startPosition: number, limit: number) {
-        EventBus.$emit("loading-species", true);
-        const promises = this.pokemonSpeciesList.slice(startPosition, startPosition+limit);
-        const newPokemons = await Promise.all(promises.map(value => pokemonSpeciesService.getByUrl({url: value})));
-        EventBus.$emit("loading-species", false);
-        return newPokemons;
     }
 }
 </script>

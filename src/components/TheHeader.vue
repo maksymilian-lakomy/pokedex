@@ -1,8 +1,10 @@
 <template>
     <header class="header">
-        <router-link to="/"><h1>Pokedex</h1></router-link>
+        <router-link to="/">
+            <h1>Pokedex</h1>
+        </router-link>
         <nav class="header__nav">
-            <v-navigation-search @search="setSearch($event)" :search="search"/>
+            <v-navigation-search @search="setSearch($event)" :search="search" />
             <v-navigation-filters
                 @display-filter="setActiveFilterKey($event)"
                 @reset-filters="resetFilters()"
@@ -22,21 +24,21 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
-import Component, { mixins } from "vue-class-component";
-import { Prop, Watch } from "vue-property-decorator";
+import Vue from 'vue';
+import Component, { mixins } from 'vue-class-component';
+import { Prop, Watch } from 'vue-property-decorator';
 
-import { filters } from "@/enums/Filters";
-import pokemonFilterService from "../services/pokemonFilterService";
+import { filters } from '@/enums/Filters';
+import pokemonFilterService from '../services/pokemonFilterService';
 
-import { AsyncFlags } from "@/mixins/AsyncFlags";
-import { Filters } from "@/mixins/Filters";
-import { Search } from "@/mixins/Search";
-import NavigationSearch from "@/components/Navigation/NavigationSearch.vue";
-import NavigationFilters from "@/components/Navigation/NavigationFilters.vue";
-import NavigationFilterOptions from "@/components/Navigation/NavigationFilterOptions.vue";
+import { AsyncFlags } from '@/mixins/AsyncFlags';
+import { Filters } from '@/mixins/Filters';
+import { Search } from '@/mixins/Search';
+import NavigationSearch from '@/components/Navigation/NavigationSearch.vue';
+import NavigationFilters from '@/components/Navigation/NavigationFilters.vue';
+import NavigationFilterOptions from '@/components/Navigation/NavigationFilterOptions.vue';
 
-import { parseQuery } from "@/mixins/parseQuery";
+import { parseQuery } from '@/mixins/parseQuery';
 import { Next, Route } from 'vue-router';
 
 interface OptionChangeEvent {
@@ -46,20 +48,14 @@ interface OptionChangeEvent {
 
 @Component({
     components: {
-        "v-navigation-search": NavigationSearch,
-        "v-navigation-filter-options": NavigationFilterOptions,
-        "v-navigation-filters": NavigationFilters
+        'v-navigation-search': NavigationSearch,
+        'v-navigation-filter-options': NavigationFilterOptions,
+        'v-navigation-filters': NavigationFilters
     }
 })
 export default class TheHeader extends mixins(AsyncFlags, Filters, Search) {
     filtersList: Record<string, Array<string>> = {};
     filterKey: string | null = null;
-
-    @Watch("$route.path")
-    onPathChange(value: string) {
-        if (value !== '/')
-            this.filterKey = null;
-    }
 
     setActiveFilterKey(filterKey: string) {
         this.filterKey = filterKey === this.filterKey ? null : filterKey;
@@ -74,51 +70,70 @@ export default class TheHeader extends mixins(AsyncFlags, Filters, Search) {
     }
 
     async setSearch(search: string) {
-        if (!this.canPerformAsyncOperation()) return;
-        const query = parseQuery(this.$route.query);
-        if (!query.search && search.length === 0) return;
-        else if (query.search && query.search.includes(search)) return;
-        else if (search.length === 0) delete query.search;
-        else query.search = [search];
-        this.$router.push({
-            path: "/",
-            params: this.$route.params,
-            query
-        });
-    }
-
-    setActiveOption({ filterKey, option }: OptionChangeEvent) {
-        if (!this.canPerformAsyncOperation()) return;
-        const query = parseQuery(this.$route.query);
-        if (!query[filterKey]) query[filterKey] = [option];
-        else if (query[filterKey] && !query[filterKey].includes(option))
-            query[filterKey].push(option);
-        else query[filterKey].splice(query[filterKey].indexOf(option), 1);
-        this.$router.push({
-            path: "/",
-            params: this.$route.params,
-            query
-        });
-    }
-
-    resetFilters() {
-        if (!this.canPerformAsyncOperation()) return;
-        const query = parseQuery(this.$route.query);
-        for (const filterKey of filters) {
-            if (query[filterKey]) delete query[filterKey];
+        try {
+            const queries = parseQuery(this.$route.query);
+            search !== ''
+                ? (queries['search'] = [search])
+                : delete queries['search'];
+            queries['p'] = ['1'];
+            await this.$router.push({
+                path: '/',
+                params: this.$route.params,
+                query: queries
+            });
+        } catch (e) {
+            return;
         }
-        this.$router.push({
-            path: "/",
-            params: this.$route.params,
-            query
-        });
+    }
+
+    async setActiveOption({ filterKey, option }: OptionChangeEvent) {
+        try {
+            const queries = parseQuery(this.$route.query);
+
+            if (!queries[filterKey]) queries[filterKey] = [option];
+            else if (queries[filterKey] && !queries[filterKey].includes(option))
+                queries[filterKey].push(option);
+            else
+                queries[filterKey].splice(
+                    queries[filterKey].indexOf(option),
+                    1
+                );
+                
+            queries['p'] = ['1'];
+            await this.$router.push({
+                path: '/',
+                params: this.$route.params,
+                query: queries
+            });
+        } catch (e) {
+            return;
+        }
+    }
+
+    async resetFilters() {
+        try {
+            const queries = parseQuery(this.$route.query);
+            filters.forEach(key => {
+                delete queries[key];
+            });
+            queries['p'] = ['1'];
+            this.$router.push({
+                path: '/',
+                params: this.$route.params,
+                query: queries
+            });
+        } catch (e) {
+            return;
+        }
     }
 
     async loadOptions() {
-        for await (const filter of filters)
-            this.filtersList[filter] = await pokemonFilterService.getOptions({
-                filter
-            });
+        const availableFilters = await Promise.all(
+            filters.map(filter => pokemonFilterService.getOptions({ filter }))
+        );
+        filters.forEach((filter, i) =>
+            Vue.set(this.filtersList, filter, availableFilters[i])
+        );
     }
 
     async created() {
