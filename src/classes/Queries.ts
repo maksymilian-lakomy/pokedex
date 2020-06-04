@@ -19,9 +19,12 @@ export class Queries {
         return this._queries;
     }
 
-    public has(query: string): boolean {
-        if (this._queries[query] !== undefined)
+    public has(query: string, value?: string): boolean {
+        if (this._queries[query] !== undefined) {
+            if (value !== undefined && !this._queries[query].includes(value))
+                return false;
             return true;
+        }
         return false;
     }
 
@@ -44,9 +47,9 @@ export class Queries {
 
     public removeFromQuery(query: string, value: string | Array<string>) {
         if (!this._queries[query]) return;
-        if (typeof value === 'string') 
-            this._queries[query] = this._queries[query].filter(_query => query !== value);
-        else 
+        if (typeof value === 'string')
+            this._queries[query] = this._queries[query].filter(_query => _query !== value);
+        else
             this._queries[query] = this._queries[query].filter(_query => !value.includes(_query));
         if (this._queries[query].length === 0)
             delete this._queries[query];
