@@ -45,4 +45,8 @@ button
     padding: unset
     color: inherit
     background-color: unset
+
+ul
+    margin: 0
+    padding: 0
 </style>

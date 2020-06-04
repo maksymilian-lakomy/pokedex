@@ -2,12 +2,14 @@
     <div>
         <v-available-filters :filters="Object.keys(filters)" @active-filter="setActiveFilter" :activeFilter="activeFilter"/>
         <keep-alive>
+            <transition name="filter-options" :style="{height: '25px'}">
             <v-available-options
                 v-if="activeFilter !== null"
                 @option-click="changeOption(activeFilter, $event)"
                 :options="filters[activeFilter]"
                 :filter="activeFilter"
             />
+            </transition>
         </keep-alive>
     </div>
 </template>
@@ -69,5 +71,11 @@ export default class HeaderFilters extends Vue {
 </script>
 
 <style lang="sass">
+.filter-options-enter-active, .filter-options-leave-active 
+    transition-duration: .5s
+    opacity: 1
+    max-height: 2.7em
 
+.filter-options-enter, .filter-options-leave-to
+    max-height: 0
 </style>
