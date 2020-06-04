@@ -86,7 +86,7 @@ export default class BrowserPaginationn extends Vue {
 
     &__element
         list-style: none
-        padding: 0 .25em
+        padding: 0 .5em
 
         &__button
             cursor: pointer
@@ -101,5 +101,8 @@ export default class BrowserPaginationn extends Vue {
             font-weight: bolder
             font-size: 1em
             color: #707070
+
+    &__element:nth-child(1)
+        padding-left: 0
 
 </style>

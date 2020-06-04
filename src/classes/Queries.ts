@@ -38,11 +38,12 @@ export class Queries {
     }
 
     public setQuery(query: string, value: string | Array<string>): void {
-        if (value.length === 0 && this._queries[query] !== undefined) {
+        if (value.length === 0 && this._queries[query] !== undefined)
             delete this._queries[query];
-        } else {
+        else if (value.length === 0) 
+            return;
+        else 
             this._queries[query] = typeof value === 'string' ? [value] : [...value];
-        }
     }
 
     public addToQuery(query: string, value: string | Array<string>) {

@@ -8,7 +8,7 @@
                     speciesId: pokemon.id
                 }}"
         >
-            <v-pokemon-card
+            <v-browser-pokemon-card
                 class="pokemon-list__listing__card"
                 :pokemonSpecies="pokemon"
                 :variety="0"
@@ -24,12 +24,12 @@ import { Prop } from 'vue-property-decorator';
 
 import PokemonSpeciesData from '@/classes/PokemonSpeciesData';
 
-import PokemonCard from '@/components/PokemonCard.vue';
+import BrowserPokemonCard from './BrowserPokemonCard.vue';
 import PokemonsNotFound from './NotFound.vue';
 
 @Component({
     components: {
-        'v-pokemon-card': PokemonCard,
+        'v-browser-pokemon-card': BrowserPokemonCard,
         'v-pokemons-not-found': PokemonsNotFound
     }
 })

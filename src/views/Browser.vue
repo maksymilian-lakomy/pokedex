@@ -73,11 +73,14 @@ export default class Browser extends Vue {
         if (this.pokemonsSpeciesList.filters !== null && countTree(this.pokemonsSpeciesList.filters) === countTree(newFilters)) 
             newFilters = undefined;
 
-        if (queries.has('p') && parseInt(queries.queries['p'][0]) !== this.pokemonsSpeciesList.currentPage)
+        if (queries.has('p'))
             page = parseInt(queries.queries['p'][0]);
 
-        if (queries.has('search') && queries.queries['search'][0] !== this.pokemonsSpeciesList.search) 
+        if (queries.has('search')) 
             search = queries.queries['search'][0];
+
+        if (!queries.has('search') && this.pokemonsSpeciesList.search.length > 0)
+            search = '';
 
         this.pokemonsSpeciesList.setOptions({ filters: newFilters, page, search });
         if (newFilters !== undefined)

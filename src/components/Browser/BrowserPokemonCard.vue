@@ -55,7 +55,7 @@ import { StringFilters } from '@/mixins/StringFilters';
         "v-pokemon-tags-list": PokemonTagsList
     }
 })
-export default class PokemonCard extends Mixins(StringFilters) {
+export default class BrowserPokemonCard extends Mixins(StringFilters) {
     @Prop(PokemonSpeciesData)
     pokemonSpecies!: PokemonSpeciesData;
 

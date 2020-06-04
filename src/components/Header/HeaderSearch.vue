@@ -21,8 +21,8 @@ export default class HeaderSearch extends Vue {
             return;
 
         const searchString = event.target.value;
-        const formatted = event.target.value.toLowerCase().split(' ').join('-');
-        this.queries.setQuery('search', formatted);
+
+        this.queries.setQuery('search', event.target.value);
 
         this.$router.push({
             path: '/',
@@ -32,7 +32,9 @@ export default class HeaderSearch extends Vue {
     }
 
     get searchString(): string {
-        return this.queries.has('search') ? this.queries.queries['search'][0] : '';
+        return this.queries.has('search')
+            ? this.queries.queries['search'][0]
+            : '';
     }
 
     get queries(): Queries {
@@ -40,3 +42,16 @@ export default class HeaderSearch extends Vue {
     }
 }
 </script>
+
+<style lang="sass">
+.search
+    outline: none
+    font-size: inherit
+    font-family: inherit
+    border: unset
+    background-color: #E9E9E9
+    color: #707070
+    padding: .625em 1em
+    border-radius: 1em
+    margin-right: 1em
+</style>
