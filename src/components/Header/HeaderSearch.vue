@@ -21,20 +21,22 @@ export default class HeaderSearch extends Vue {
             return;
 
         const searchString = event.target.value;
-        const queries = new Queries(this.$route.query);
         const formatted = event.target.value.toLowerCase().split(' ').join('-');
-        queries.setQuery('search', formatted);
+        this.queries.setQuery('search', formatted);
 
         this.$router.push({
             path: '/',
             params: this.$route.params,
-            query: queries.queries
+            query: this.queries.queries
         });
     }
 
     get searchString(): string {
-        const queries = new Queries(this.$route.query);
-        return queries.has('search') ? queries.queries['search'][0] : '';
+        return this.queries.has('search') ? this.queries.queries['search'][0] : '';
+    }
+
+    get queries(): Queries {
+        return new Queries(this.$route.query);
     }
 }
 </script>
