@@ -1,9 +1,6 @@
 <template>
     <div id="app">
-        <v-header />
-        <main id="main">
-            <router-view />
-        </main>
+        <router-view/>
     </div>
 </template>
 
@@ -13,12 +10,8 @@ import Component from 'vue-class-component';
 
 import { MetaInfo } from 'vue-meta';
 
-import Header from '@/components/Header/Header.vue';
 
 @Component({
-    components: {
-        'v-header': Header
-    },
     metaInfo(): MetaInfo {
         return {
             titleTemplate: '%s | Pokedex',
@@ -48,9 +41,6 @@ a
     text-decoration: none
     color: inherit
 
-#main
-    position: relative
-    flex: 1 1 auto
 
 button
     cursor: pointer
@@ -71,11 +61,8 @@ ul
 
 #app
     font-family: 'Roboto', sans-serif
-    display: flex
     position: relative
-    flex-direction: column
     margin: auto
-    min-height: 100vh
     width: 75%
     @media (max-width: 1440px)
         width: 80%

@@ -1,5 +1,5 @@
 <template>
-    <section>
+    <v-layout-main>
         <v-browser-loading v-show="loading" />
         <div v-if="displayList">
             <v-browser-pagination :currentPage="currentPage" :pageAmount="pageAmount" />
@@ -17,7 +17,7 @@
                 </span>
             </v-not-found>
         </keep-alive>
-    </section>
+    </v-layout-main>
 </template>
 
 <script lang="ts">
@@ -40,12 +40,15 @@ import { Queries } from '@/classes/Queries';
 import { filters } from '@/enums/Filters';
 import { countTree } from '@/methods/countTree';
 
+import Main from '@/Layouts/Main.vue';
+
 @Component({
     components: {
         'v-browser-list': BrowserList,
         'v-browser-pagination': BrowserPagination,
         'v-browser-loading': BrowserLoading,
-        'v-not-found': NotFound
+        'v-not-found': NotFound,
+        'v-layout-main': Main
     },
     metaInfo(): MetaInfo {
         return {

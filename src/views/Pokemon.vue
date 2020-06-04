@@ -1,28 +1,30 @@
 <template>
-    <div class="pokemon-overview" v-if="currentVariety">
-        <div class="pokemon-overview__left">
-            <v-pokemon-main :pokemonData="currentVariety" :filterPortrait="filterPortrait" />
-            <v-pokemon-tags-list :pokemonData="currentVariety" />
-            <v-pokemon-data-description :pokemonSpeciesData="currentSpecies" />
-            <v-pokemon-abilities-list :pokemonData="currentVariety" />
+    <v-layout-main>
+        <div class="pokemon-overview" v-if="currentVariety">
+            <div class="pokemon-overview__left">
+                <v-pokemon-main :pokemonData="currentVariety" :filterPortrait="filterPortrait" />
+                <v-pokemon-tags-list :pokemonData="currentVariety" />
+                <v-pokemon-data-description :pokemonSpeciesData="currentSpecies" />
+                <v-pokemon-abilities-list :pokemonData="currentVariety" />
+            </div>
+            <div class="pokemon-overview__center">
+                <h1>Overview</h1>
+                <v-pokemon-stats-list :pokemonData="currentVariety" />
+                <v-pokemon-moves-list :pokemonData="currentVariety" />
+            </div>
+            <div class="pokemon-overview__right" v-if="currentSpecies">
+                <v-pokemon-evolutions
+                    :chain="evolutionData"
+                    :name="currentName"
+                    :variation="variety"
+                />
+                <v-pokemon-variaties-list
+                    :varieties="currentSpecies.varieties"
+                    :currentVarietyIndex="variety"
+                />
+            </div>
         </div>
-        <div class="pokemon-overview__center">
-            <h1>Overview</h1>
-            <v-pokemon-stats-list :pokemonData="currentVariety" />
-            <v-pokemon-moves-list :pokemonData="currentVariety" />
-        </div>
-        <div class="pokemon-overview__right" v-if="currentSpecies">
-            <v-pokemon-evolutions
-                :chain="evolutionData"
-                :name="currentName"
-                :variation="variety"
-            />
-            <v-pokemon-variaties-list
-                :varieties="currentSpecies.varieties"
-                :currentVarietyIndex="variety"
-            />
-        </div>
-    </div>
+    </v-layout-main>
 </template>
 
 <script lang="ts">
@@ -50,10 +52,13 @@ import PokemonVarietiesList from '@/components/Pokemon/PokemonVarietiesList.vue'
 import PokemonTagsList from '@/components/Pokemon/PokemonTagsList.vue';
 import PokemonData from '@/classes/PokemonData';
 
+import Main from '@/Layouts/Main.vue';
+
 Component.registerHooks(['beforeRouteEnter', 'beforeRouteUpdate']);
 
 @Component<Pokemon>({
     components: {
+        'v-layout-main': Main,
         'v-pokemon-main': PokemonMain,
         'v-pokemon-data-description': PokemonDataDescription,
         'v-pokemon-abilities-list': PokemonAbilitiesList,
@@ -76,7 +81,6 @@ export default class Pokemon extends Mixins(StringFilters) {
                 evolutionData
             );
             next(vm => {
-                console.log('test');
                 vm.evolutionData = evolutionData;
             });
         } catch (e) {
@@ -89,13 +93,18 @@ export default class Pokemon extends Mixins(StringFilters) {
         return this.currentSpecies.varieties[this.variety].pokemonFull!;
     }
 
-    get currentName(): string | null{
+    get currentName(): string | null {
         if (this.evolutionData === null) return null;
-        return Object.values(this.evolutionData).find(evolutionData => evolutionData.speciesData!.id === parseInt(this.$route.params.speciesId))!.name;
+        return Object.values(this.evolutionData).find(
+            evolutionData =>
+                evolutionData.speciesData!.id ===
+                parseInt(this.$route.params.speciesId)
+        )!.name;
     }
 
     get currentSpecies(): PokemonSpeciesData | null {
-        if (this.evolutionData === null || this.currentName === null) return null;
+        if (this.evolutionData === null || this.currentName === null)
+            return null;
         return this.evolutionData[this.currentName].speciesData!;
     }
 

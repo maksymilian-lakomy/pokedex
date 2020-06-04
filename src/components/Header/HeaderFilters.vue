@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div style="max-width: 100%">
         <v-available-filters :filters="Object.keys(filters)" @active-filter="setActiveFilter" :activeFilter="activeFilter"/>
         <keep-alive>
             <transition name="filter-options">
