@@ -16,20 +16,7 @@ import { StringFilters } from "@/mixins/StringFilters";
 import PokemonSpeciesData from "@/classes/PokemonSpeciesData";
 import { parseQuery } from "@/mixins/parseQuery";
 
-import MetaInfo from "vue-meta";
-
-@Component<PokemonDataDescription>({
-    metaInfo(): MetaInfo {
-        return {
-            meta: [
-                {
-                    name: "Description",
-                    content: this.currentDescription
-                }
-            ]
-        };
-    }
-})
+@Component
 export default class PokemonDataDescription extends Mixins(StringFilters) {
     @Prop(PokemonSpeciesData)
     readonly pokemonSpeciesData!: PokemonSpeciesData;

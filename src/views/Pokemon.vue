@@ -67,6 +67,17 @@ Component.registerHooks(['beforeRouteEnter', 'beforeRouteUpdate']);
         'v-pokemon-evolutions': PokemonEvolutions,
         'v-pokemon-variaties-list': PokemonVarietiesList,
         'v-pokemon-tags-list': PokemonTagsList
+    },
+    metaInfo(): MetaInfo {
+        return {
+            title: this.currentVarietyName,
+            meta: [
+                {
+                    name: "Description",
+                    content: this.description
+                }
+            ]
+        }
     }
 })
 export default class Pokemon extends Mixins(StringFilters) {
@@ -86,6 +97,18 @@ export default class Pokemon extends Mixins(StringFilters) {
         } catch (e) {
             console.error(e);
         }
+    }
+
+    get description(): string {
+        if (this.currentSpecies)
+            return this.currentSpecies.flavorTextEntries[0].text;
+        return '';
+    }
+
+    get currentVarietyName(): string {
+        if (this.currentVariety)
+            return this.currentVariety.name.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ');
+        return 'Loading...';
     }
 
     get currentVariety(): PokemonData | null {
