@@ -36,12 +36,11 @@ import { Queries } from '@/classes/Queries';
     }
 })
 export default class BrowserPaginationn extends Vue {
-    @Prop({required: true, type: Number})
+    @Prop({ required: true, type: Number })
     readonly currentPage!: number;
 
-    @Prop({required: true, type: Number})
+    @Prop({ required: true, type: Number })
     readonly pageAmount!: number;
-
 
     get pages() {
         const pages: Array<number> = [];
@@ -55,14 +54,18 @@ export default class BrowserPaginationn extends Vue {
         return pages;
     }
 
-    setPage(page: number) {
+    async setPage(page: number) {
         this.queries.setQuery('p', page.toString());
 
-        this.$router.push({
-            path: this.$route.path,
-            params: this.$route.params,
-            query: this.queries.queries
-        });
+        try {
+            await this.$router.push({
+                path: this.$route.path,
+                params: this.$route.params,
+                query: this.queries.queries
+            });
+        } catch (e) {
+            return;
+        }
     }
 
     get queries(): Queries {

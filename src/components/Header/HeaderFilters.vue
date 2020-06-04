@@ -1,14 +1,18 @@
 <template>
     <div style="max-width: 100%">
-        <v-available-filters :filters="Object.keys(filters)" @active-filter="setActiveFilter" :activeFilter="activeFilter"/>
+        <v-available-filters
+            :filters="Object.keys(filters)"
+            @active-filter="setActiveFilter"
+            :activeFilter="activeFilter"
+        />
         <keep-alive>
             <transition name="filter-options">
-            <v-available-options
-                v-if="activeFilter !== null"
-                @option-click="changeOption(activeFilter, $event)"
-                :options="filters[activeFilter]"
-                :filter="activeFilter"
-            />
+                <v-available-options
+                    v-if="activeFilter !== null"
+                    @option-click="changeOption(activeFilter, $event)"
+                    :options="filters[activeFilter]"
+                    :filter="activeFilter"
+                />
             </transition>
         </keep-alive>
     </div>
@@ -41,16 +45,20 @@ export default class HeaderFilters extends Vue {
         this.loadOptions();
     }
 
-    changeOption(filter: string, option: string) {
+    async changeOption(filter: string, option: string) {
         if (this.queries.has(filter, option))
             this.queries.removeFromQuery(filter, option);
         else this.queries.addToQuery(filter, option);
         this.queries.setQuery('p', (1).toString());
-        this.$router.push({
-            path: '/',
-            params: this.$route.params,
-            query: this.queries.queries
-        });
+        try {
+            await this.$router.push({
+                path: '/',
+                params: this.$route.params,
+                query: this.queries.queries
+            });
+        } catch (e) {
+            return;
+        }
     }
 
     setActiveFilter(filter: string) {

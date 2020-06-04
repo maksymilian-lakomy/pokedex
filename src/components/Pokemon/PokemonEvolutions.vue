@@ -15,7 +15,10 @@
                     @click="changeEvolution(currentSpecies.id)"
                 />
             </div>
-            <div class="pokemon-evolutions-table__next" v-if="nextEvolutions && nextEvolutions.length > 0">
+            <div
+                class="pokemon-evolutions-table__next"
+                v-if="nextEvolutions && nextEvolutions.length > 0"
+            >
                 <v-pokemon-evolution-portrait
                     class="pokemon-evolutions-table__portrait"
                     v-for="evolution in nextEvolutions"
@@ -29,34 +32,34 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
-import Component from "vue-class-component";
-import { Prop } from "vue-property-decorator";
-import PokemonData from "@/classes/PokemonData";
-import PokemonEvolutionPortrait from "./PokemonEvolutionPortrait.vue";
-import PokemonSpeciesData from "@/classes/PokemonSpeciesData";
+import Vue from 'vue';
+import Component from 'vue-class-component';
+import { Prop } from 'vue-property-decorator';
+import PokemonData from '@/classes/PokemonData';
+import PokemonEvolutionPortrait from './PokemonEvolutionPortrait.vue';
+import PokemonSpeciesData from '@/classes/PokemonSpeciesData';
 import EvolutionData from '@/classes/EvolutionData';
 
 @Component({
     components: {
-        "v-pokemon-evolution-portrait": PokemonEvolutionPortrait
+        'v-pokemon-evolution-portrait': PokemonEvolutionPortrait
     }
 })
 export default class PokemonEvolutions extends Vue {
-    @Prop({type: Object, required: true})
+    @Prop({ type: Object, required: true })
     readonly chain!: Record<string, EvolutionData>;
 
-    @Prop({type: String, required: true})
+    @Prop({ type: String, required: true })
     readonly name!: string;
 
-    @Prop({type: Number, required: true})
+    @Prop({ type: Number, required: true })
     readonly variation!: number;
 
     // --------------------------
     // Pokemon Evolutions
     // --------------------------
     get previousEvolution(): PokemonSpeciesData | null {
-        if (this.currentEvolution.evolvesFrom === undefined) return null; 
+        if (this.currentEvolution.evolvesFrom === undefined) return null;
         return this.chain[this.currentEvolution.evolvesFrom].speciesData!;
     }
 
@@ -69,22 +72,27 @@ export default class PokemonEvolutions extends Vue {
     }
 
     get nextEvolutions(): Array<PokemonSpeciesData> {
-        return this.currentEvolution.evolvesTo.map(name => this.chain[name].speciesData!);
+        return this.currentEvolution.evolvesTo.map(
+            name => this.chain[name].speciesData!
+        );
     }
 
-    changeEvolution(id: number) {
+    async changeEvolution(id: number) {
         if (+this.$route.params.speciesId === id) return;
         const params = {};
         Object.assign(params, this.$route.params, { speciesId: id.toString() });
-        this.$router.push({
-            name: this.$route.name as string,
-            params,
-            query: {}
-        });
+        try {
+            await this.$router.push({
+                name: this.$route.name as string,
+                params,
+                query: {}
+            });
+        } catch (e) {
+            return;
+        }
     }
 
     getPokemonVariation(pokemonSpecies: PokemonSpeciesData, index: number) {
-        console.log(pokemonSpecies, index);
         if (pokemonSpecies !== undefined)
             return pokemonSpecies.varieties[index].pokemonFull;
         return undefined;

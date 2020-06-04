@@ -11,7 +11,8 @@
                 <span v-if="searchQuery">
                     <p>
                         Are you sure that you are looking for
-                        '<b>{{searchQuery}}</b>'?
+                        '
+                        <b>{{searchQuery}}</b>'?
                     </p>
                     <p>If it is a variation of a pokemon, it won't be listed here!</p>
                 </span>
@@ -94,12 +95,16 @@ export default class Browser extends Vue {
         this.loading = true;
         if (!queries.has('p')) {
             this.queries.setQuery('p', (1).toString());
-            this.$router.push({
-                path: '/',
-                params: this.$route.params,
-                query: queries.queries
-            });
-            return;
+            try {
+                await this.$router.push({
+                    path: '/',
+                    params: this.$route.params,
+                    query: queries.queries
+                });
+                return;
+            } catch (e) {
+                return;
+            }
         }
 
         let newFilters:
@@ -140,14 +145,18 @@ export default class Browser extends Vue {
         return new Queries(this.$route.query);
     }
 
-    cardClicked(event: PokemonSpeciesData) {
-        this.$router.push({
-            name: 'Pokemon',
-            params: {
-                speciesId: event.id.toString(),
-                evolution: event.evolutionChain.toString()
-            }
-        });
+    async cardClicked(event: PokemonSpeciesData) {
+        try {
+            await this.$router.push({
+                name: 'Pokemon',
+                params: {
+                    speciesId: event.id.toString(),
+                    evolution: event.evolutionChain.toString()
+                }
+            });
+        } catch (e) {
+            return;
+        }
     }
 }
 </script>

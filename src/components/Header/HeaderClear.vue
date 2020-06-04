@@ -1,6 +1,6 @@
 <template>
     <button @click="clearQueries">
-        <v-clear-decorator/>
+        <v-clear-decorator />
     </button>
 </template>
 
@@ -19,15 +19,20 @@ import { Queries } from '@/classes/Queries';
     }
 })
 export default class HeaderClear extends Vue {
-    clearQueries() {
+    async clearQueries() {
         filters.forEach(filter => this.queries.setQuery(filter, []));
         this.queries.setQuery('search', []);
         this.queries.setQuery('p', (1).toString());
-        this.$router.push({
-            path: '/',
-            params: this.$route.params,
-            query: this.queries.queries
-        });
+
+        try {
+            await this.$router.push({
+                path: '/',
+                params: this.$route.params,
+                query: this.queries.queries
+            });
+        } catch (e) {
+            return;
+        }
     }
 
     get queries(): Queries {

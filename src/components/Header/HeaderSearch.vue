@@ -13,7 +13,7 @@ import { Queries } from '@/classes/Queries';
 
 @Component
 export default class HeaderSearch extends Vue {
-    updateRoute(event: KeyboardEvent): void {
+    async updateRoute(event: KeyboardEvent): void {
         if (
             event.key.toLowerCase() !== 'enter' ||
             !(event.target instanceof HTMLInputElement)
@@ -24,11 +24,15 @@ export default class HeaderSearch extends Vue {
 
         this.queries.setQuery('search', event.target.value);
 
-        this.$router.push({
-            path: '/',
-            params: this.$route.params,
-            query: this.queries.queries
-        });
+        try {
+            await this.$router.push({
+                path: '/',
+                params: this.$route.params,
+                query: this.queries.queries
+            });
+        } catch (e) {
+            return;
+        }
     }
 
     get searchString(): string {
