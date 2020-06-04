@@ -19,6 +19,12 @@ export class Queries {
         return this._queries;
     }
 
+    public has(query: string): boolean {
+        if (this._queries[query] !== undefined)
+            return true;
+        return false;
+    }
+
     public setQuery(query: string, value: string | Array<string>): void {
         if (value.length === 0 && this._queries[query] !== undefined) {
             delete this._queries[query];
