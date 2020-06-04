@@ -8,7 +8,7 @@
         <keep-alive>
             <transition name="filter-options">
                 <v-available-options
-                    v-if="activeFilter !== null"
+                    v-if="activeFilter !== null && !loading"
                     @option-click="changeOption(activeFilter, $event)"
                     :options="filters[activeFilter]"
                     :filter="activeFilter"
@@ -37,6 +37,7 @@ import { Route, Next } from 'vue-router';
     }
 })
 export default class HeaderFilters extends Vue {
+    loading = true;
     readonly filters: Record<string, Array<string>> = {};
     activeFilter: string | null = null;
 
@@ -66,12 +67,14 @@ export default class HeaderFilters extends Vue {
     }
 
     async loadOptions() {
+        this.loading = true;
         const availableOptions = await Promise.all(
             filters.map(filter => pokemonFilterService.getOptions({ filter }))
         );
         filters.forEach((filter, i) =>
             Vue.set(this.filters, filter, availableOptions[i])
         );
+        this.loading = false;
     }
 
     get queries(): Queries {
@@ -84,12 +87,10 @@ export default class HeaderFilters extends Vue {
 .filter-options-enter-active, .filter-options-leave-active 
     transition-duration: .5s
     transition-timing-function: ease-out
-    opacity: 1
-    padding-bottom: 1em
+    padding-top: 1em
     max-height: 2em
 
 .filter-options-enter, .filter-options-leave-to
     padding: 0
-    opacity: 0
     max-height: 0
 </style>

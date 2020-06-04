@@ -58,7 +58,6 @@ export default class AvailableFilters extends Vue {
 .filters
     display: flex
     align-items: center
-    padding: 1em 0
     color: $dark-gray
     &__element
         list-style: none

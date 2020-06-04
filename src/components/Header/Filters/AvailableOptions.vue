@@ -58,7 +58,7 @@ export default class AvailableOptions extends Vue {
     overflow-y: hidden
     align-items: center
     font-size: .8em
-    padding-bottom: 1em
+    padding-top: 1em
     &__element
         padding: .1em .5em
         display: inline-block

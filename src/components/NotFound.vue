@@ -19,6 +19,7 @@ export default class NotFound extends Vue {
 </script>
 <style lang="sass">
 .not-found
+    overflow: hidden
     display: block
     position: absolute
     margin: 1em 0

@@ -34,7 +34,7 @@ import { filters } from '@/enums/Filters';
 })
 export default class Header extends Vue {
     get hasActiveQueries(): boolean {
-        for (const filter in filters) if (this.queries.has(filter)) return true;
+        for (const filter of filters) if (this.queries.has(filter)) return true;
         return this.queries.has('search');
     }
 
@@ -51,10 +51,14 @@ export default class Header extends Vue {
     flex: 0 1 auto
 
     &__bottom-menu
+        margin: 1em 0
         display: flex
         align-items: baseline
+        position: relative
 
         &__right
-            margin-left: auto
+            position: absolute
+            right: 0
+            top: 0
 
 </style>

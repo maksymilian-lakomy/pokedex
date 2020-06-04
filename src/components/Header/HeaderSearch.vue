@@ -13,7 +13,7 @@ import { Queries } from '@/classes/Queries';
 
 @Component
 export default class HeaderSearch extends Vue {
-    async updateRoute(event: KeyboardEvent): void {
+    async updateRoute(event: KeyboardEvent) {
         if (
             event.key.toLowerCase() !== 'enter' ||
             !(event.target instanceof HTMLInputElement)
