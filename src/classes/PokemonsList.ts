@@ -1,19 +1,33 @@
-import PokemonSpeciesData from './PokemonSpeciesData';
-
 import pokemonFilterService from '@/services/pokemonFilterService';
 import pokemonSpeciesService from '@/services/pokemonSpeciesService';
+import { countTree } from '@/methods/countTree';
 
-function intersection (obj1: Record<string, string>, obj2: Record<string, string>) {
+function intersection(obj1: Record<string, string>, obj2: Record<string, string>) {
     for (const name in obj1)
         if (obj2[name] === undefined)
             delete obj1[name];
+}
+
+interface Options {
+    filters?: Record<string, Array<string>>;
+    search?: string;
+    page?: number;
 }
 
 export class PokemonsSpeciesList {
     private _pokemonsSpeciesUrls: Record<string, string> = {};
 
     private _filters: Record<string, Array<string>> | null = null;
+
+    public get filters(): Readonly<Record<string, Array<string>>> {
+        return this._filters !== null ? this._filters : {};
+    }
+
     private _search = '';
+
+    public get search(): string {
+        return this._search;
+    }
 
     public get pokemonsUrls(): Array<string> {
         const search = this._search.toLowerCase().split(' ').join('-');
@@ -43,46 +57,35 @@ export class PokemonsSpeciesList {
     }
 
     private async loadPokemonsSpeciesMapWithFilters() {
-        if (this._filters === null) return;
-
-        const filterKeys = Object.keys(this._filters);
+        if (this._filters === null) throw new Error('Something went wrong!');
+        const filters: Array<string> = Object.keys(this._filters);
         const results = await Promise.all(
-            filterKeys.map(filter =>
+            filters.map(filter =>
                 pokemonFilterService.getAllFilteredPokemonSpecies({
                     filter,
                     options: this._filters![filter]
                 })
             )
         );
+
         for (let i = 1; i < results.length; i++) intersection(results[0], results[i]);
-        this._pokemonsSpeciesUrls = { ...results[0] };
+        this._pokemonsSpeciesUrls = results[0];
     }
 
     private async loadPokemonsSpeciesMap() {
         this._pokemonsSpeciesUrls = await pokemonSpeciesService.getMap();
     }
 
-    private reloadSpeciesList() {
-        if (this._filters !== null && Object.keys(this._filters).filter(options => options.length > 0).length > 0)
-            this.loadPokemonsSpeciesMapWithFilters();
+    public async reloadSpeciesList() {
+        if (this._filters !== null && countTree(this._filters) > 0)
+            await this.loadPokemonsSpeciesMapWithFilters();
         else
-            this.loadPokemonsSpeciesMap();
+            await this.loadPokemonsSpeciesMap();
     }
 
-    public setFilters(filters: Record<string, Array<string>> | null): void {
-        for (const filter in filters)
-            if (filters[filter].length === 0)
-                delete filters[filter]
-        this._filters = filters;
-        this.reloadSpeciesList();
-    }
-
-    public setSearch(search: string | null): void {
-        this._search = search === null ? '' : search;
-    }
-
-    public setPage(page: number): void {
-        if (page > 0 || page <= this.pageAmount)
-            this._currentPage = page;
+    public setOptions({ filters, page, search }: Options) {
+        if (filters !== undefined) this._filters = filters;
+        if (page !== undefined) this._currentPage = page;
+        if (search !== undefined) this._search = search;
     }
 }

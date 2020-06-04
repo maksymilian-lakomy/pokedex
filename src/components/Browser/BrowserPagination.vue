@@ -22,13 +22,9 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import { Component, Prop, Mixins } from 'vue-property-decorator';
-import { EventBus } from '@/events/EventBus';
+import { Component, Prop } from 'vue-property-decorator';
 
-import { AsyncFlags } from '@/mixins/AsyncFlags';
-import { parseQuery } from '@/mixins/parseQuery';
-
-import { PokemonsModule, getModule } from '@/store/pokemons/module';
+import { Queries } from '@/classes/Queries';
 
 @Component({
     filters: {
@@ -39,16 +35,13 @@ import { PokemonsModule, getModule } from '@/store/pokemons/module';
         }
     }
 })
-export default class ThePagination extends Mixins(AsyncFlags) {
-    readonly pokemonsStore = getModule(PokemonsModule, this.$store);
+export default class BrowserPaginationn extends Vue {
+    @Prop({required: true, type: Number})
+    readonly currentPage!: number;
 
-    get currentPage(): number {
-        return this.pokemonsStore.currentPage;
-    }
+    @Prop({required: true, type: Number})
+    readonly pageAmount!: number;
 
-    get pageAmount(): number {
-        return this.pokemonsStore.pageAmount;
-    }
 
     get pages() {
         const pages: Array<number> = [];
@@ -63,14 +56,17 @@ export default class ThePagination extends Mixins(AsyncFlags) {
     }
 
     setPage(page: number) {
-        const query = parseQuery(this.$route.query);
-        if (query.p && query.p.includes(page.toString())) return;
-        query.p = [page.toString()];
+        this.queries.setQuery('p', page.toString());
+
         this.$router.push({
             path: this.$route.path,
             params: this.$route.params,
-            query
+            query: this.queries.queries
         });
+    }
+
+    get queries(): Queries {
+        return new Queries(this.$route.query);
     }
 }
 </script>

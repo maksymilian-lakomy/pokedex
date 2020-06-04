@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import VueRouter, { RouteConfig } from 'vue-router'
-import Home from '../views/Home.vue'
+import Browser from '@/views/Browser.vue'
 import Pokemon from '@/views/Pokemon.vue';
 
 Vue.use(VueRouter)
@@ -8,8 +8,8 @@ Vue.use(VueRouter)
 const routes: Array<RouteConfig> = [
     {
         path: '/',
-        name: 'Listing',
-        component: Home
+        name: 'Browser',
+        component: Browser
     },
     {
         path: '/pokemon/evolution=:evolution&species=:speciesId',

@@ -19,6 +19,15 @@ export class Queries {
         return this._queries;
     }
 
+    public getMap(queries: Array<string>): Record<string, Array<string>> {
+        const map: Record<string, Array<string>> = {};
+        queries.forEach(query => {
+            if (this._queries[query])
+                map[query] = this._queries[query];
+        });
+        return map;
+    }
+
     public has(query: string, value?: string): boolean {
         if (this._queries[query] !== undefined) {
             if (value !== undefined && !this._queries[query].includes(value))

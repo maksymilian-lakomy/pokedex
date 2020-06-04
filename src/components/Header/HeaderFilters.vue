@@ -42,6 +42,7 @@ export default class HeaderFilters extends Vue {
             this.queries.removeFromQuery(filter, option);
         else
             this.queries.addToQuery(filter, option);
+        this.queries.setQuery('p', (1).toString());
         this.$router.push({
             path: '/',
             params: this.$route.params,

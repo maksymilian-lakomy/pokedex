@@ -1,7 +1,8 @@
 <template>
     <div id="app">
-        <v-header />
-        <router-view />
+        <v-layout-main>
+            <router-view />
+        </v-layout-main>
     </div>
 </template>
 
@@ -9,13 +10,13 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 
-import TheHeader from "@/components/TheHeader.vue";
+import LayoutMain from '@/Layouts/Main.vue';
 
 import { MetaInfo } from "vue-meta";
 
 @Component({
     components: {
-        "v-header": TheHeader
+        "v-layout-main": LayoutMain
     },
     metaInfo(): MetaInfo {
         return {
@@ -51,6 +52,7 @@ a
     position: relative
     flex-direction: column
     margin: auto
+    min-height: 100vh
     width: 75%
     @media (max-width: 1440px)
         width: 80%
