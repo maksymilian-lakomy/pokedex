@@ -19,8 +19,8 @@ export class PokemonsSpeciesList {
 
     private _filters: Record<string, Array<string>> | null = null;
 
-    public get filters(): Readonly<Record<string, Array<string>>> {
-        return this._filters !== null ? this._filters : {};
+    public get filters(): Readonly<Record<string, Array<string>>> | null{
+        return this._filters;
     }
 
     private _search = '';

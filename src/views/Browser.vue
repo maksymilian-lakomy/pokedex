@@ -39,6 +39,7 @@ export default class Browser extends Vue {
     private readonly pokemonsSpeciesList = new PokemonsSpeciesList();
     private pokemonSpecies = new Array<PokemonSpeciesData>();
     private pageUrls: Array<string> = [];
+    private loading = true;
 
     get currentPage(): number {
         return this.pokemonsSpeciesList.currentPage;
@@ -53,29 +54,24 @@ export default class Browser extends Vue {
         this.pokemonSpecies = await Promise.all(
             pageUrls.map(url => pokemonSpeciesService.getByUrl({ url }))
         );
+        this.loading = false;
     }
 
     @Watch('queries', { immediate: true })
     async onQueriesChange(queries: Queries) {
+        this.loading = true;
         if (!queries.has('p')) {
             this.queries.setQuery('p', (1).toString());
-            this.$router.push({
-                path: '/',
-                params: this.$route.params,
-                query: queries.queries
-            });
+            this.$router.push({path: '/', params: this.$route.params, query: queries.queries });
             return;
         }
 
-        const previousFilters = this.pokemonsSpeciesList.filters;
-        const newFilters = queries.getMap(filters);
-
-        let passFilters: Record<string, Array<string>> | undefined = undefined;
+        let newFilters: Record<string, Array<string>> | undefined = queries.getMap(filters);
         let search: string | undefined = undefined;
         let page: number | undefined = undefined;
 
-        if (countTree(previousFilters) !== countTree(newFilters)) 
-            passFilters = newFilters;
+        if (this.pokemonsSpeciesList.filters !== null && countTree(this.pokemonsSpeciesList.filters) === countTree(newFilters)) 
+            newFilters = undefined;
 
         if (queries.has('p') && parseInt(queries.queries['p'][0]) !== this.pokemonsSpeciesList.currentPage)
             page = parseInt(queries.queries['p'][0]);
@@ -83,12 +79,10 @@ export default class Browser extends Vue {
         if (queries.has('search') && queries.queries['search'][0] !== this.pokemonsSpeciesList.search) 
             search = queries.queries['search'][0];
 
-        this.pokemonsSpeciesList.setOptions({
-            filters: passFilters,
-            page,
-            search
-        });
-        await this.pokemonsSpeciesList.reloadSpeciesList();
+        this.pokemonsSpeciesList.setOptions({ filters: newFilters, page, search });
+        if (newFilters !== undefined)
+            await this.pokemonsSpeciesList.reloadSpeciesList();
+
         this.pageUrls = this.pokemonsSpeciesList.selectedPokemonsUrls;
     }
 

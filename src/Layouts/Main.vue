@@ -28,3 +28,21 @@ import HeaderFilters from '@/components/Header/HeaderFilters.vue';
 })
 export default class LayoutMain extends Vue {}
 </script>
+
+<style lang="sass">
+
+#header
+    max-width: 100%
+    border-bottom: 1px solid #E9E9E9
+    
+button
+    cursor: pointer
+    outline: none
+    font-size: inherit
+    font-family: inherit
+    font-weight: inherit
+    border: unset
+    padding: unset
+    color: inherit
+    background-color: unset
+</style>

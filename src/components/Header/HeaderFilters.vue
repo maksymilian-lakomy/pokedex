@@ -1,6 +1,6 @@
 <template>
     <div>
-        <v-available-filters :filters="Object.keys(filters)" @active-filter="setActiveFilter" />
+        <v-available-filters :filters="Object.keys(filters)" @active-filter="setActiveFilter" :activeFilter="activeFilter"/>
         <keep-alive>
             <v-available-options
                 v-if="activeFilter !== null"
@@ -40,14 +40,13 @@ export default class HeaderFilters extends Vue {
     changeOption(filter: string, option: string) {
         if (this.queries.has(filter, option))
             this.queries.removeFromQuery(filter, option);
-        else
-            this.queries.addToQuery(filter, option);
+        else this.queries.addToQuery(filter, option);
         this.queries.setQuery('p', (1).toString());
         this.$router.push({
             path: '/',
             params: this.$route.params,
             query: this.queries.queries
-        })
+        });
     }
 
     setActiveFilter(filter: string) {
