@@ -61,6 +61,7 @@ export default class AvailableOptions extends Vue {
     display: flex
     overflow-x: auto
     overflow-y: hidden
+    align-items: center
     font-size: .8em
     padding: 1em 0
     &__element

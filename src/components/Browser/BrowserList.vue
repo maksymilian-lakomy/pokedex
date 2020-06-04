@@ -25,12 +25,10 @@ import { Prop } from 'vue-property-decorator';
 import PokemonSpeciesData from '@/classes/PokemonSpeciesData';
 
 import BrowserPokemonCard from './BrowserPokemonCard.vue';
-import PokemonsNotFound from './NotFound.vue';
 
 @Component({
     components: {
-        'v-browser-pokemon-card': BrowserPokemonCard,
-        'v-pokemons-not-found': PokemonsNotFound
+        'v-browser-pokemon-card': BrowserPokemonCard
     }
 })
 export default class BrowserList extends Vue {

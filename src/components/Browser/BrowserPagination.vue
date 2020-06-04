@@ -82,7 +82,7 @@ export default class BrowserPaginationn extends Vue {
     background-color: white
     top: 0
     display: flex
-    z-index: 999999
+    z-index: 100
 
     &__element
         list-style: none
