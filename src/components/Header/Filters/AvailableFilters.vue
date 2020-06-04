@@ -65,6 +65,7 @@ export default class AvailableFilters extends Vue {
         margin-right: .75em
         position: relative
         transition-duration: .2s
+        font-weight: bolder
         &::after
             position: absolute
             content: ""

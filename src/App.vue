@@ -1,12 +1,8 @@
 <template>
     <div id="app">
-        <header id="header">
-            <v-header-name />
-            <v-header-search />
-            <v-header-filters />
-        </header>
+        <v-header />
         <main id="main">
-            <router-view/>
+            <router-view />
         </main>
     </div>
 </template>
@@ -15,17 +11,13 @@
 import Vue from 'vue';
 import Component from 'vue-class-component';
 
-import HeaderName from '@/components/Header/HeaderName.vue';
-import HeaderSearch from '@/components/Header/HeaderSearch.vue';
-import HeaderFilters from '@/components/Header/HeaderFilters.vue';
-
 import { MetaInfo } from 'vue-meta';
+
+import Header from '@/components/Header/Header.vue';
 
 @Component({
     components: {
-        'v-header-name': HeaderName,
-        'v-header-search': HeaderSearch,
-        'v-header-filters': HeaderFilters
+        'v-header': Header
     },
     metaInfo(): MetaInfo {
         return {
@@ -60,11 +52,6 @@ a
     position: relative
     flex: 1 1 auto
 
-#header
-    max-width: 100%
-    border-bottom: 1px solid #E9E9E9
-    flex: 0 1 auto
-    
 button
     cursor: pointer
     outline: none
@@ -75,6 +62,8 @@ button
     padding: unset
     color: inherit
     background-color: unset
+    display: flex
+    align-items: center
 
 ul
     margin: 0

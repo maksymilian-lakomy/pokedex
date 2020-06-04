@@ -1,16 +1,14 @@
 <template>
-    <div class="options-wrapper">
-        <ul class="options">
-            <li
-                class="options__element"
-                :class="{'options__element--active': isActive(option)}"
-                v-for="(option, i) in options"
-                :key="i"
-            >
-                <button @click="$emit('option-click', option)">{{option | uncode}}</button>
-            </li>
-        </ul>
-    </div>
+    <ul class="options">
+        <li
+            class="options__element"
+            :class="{'options__element--active': isActive(option)}"
+            v-for="(option, i) in options"
+            :key="i"
+        >
+            <button @click="$emit('option-click', option)">{{option | uncode}}</button>
+        </li>
+    </ul>
 </template>
 
 <script lang="ts">
@@ -52,9 +50,6 @@ export default class AvailableOptions extends Vue {
 </script>
 
 <style lang="sass">
-.options-wrapper
-    height: 100%
-
 .options
     margin: 0
     width: 100%
@@ -63,7 +58,7 @@ export default class AvailableOptions extends Vue {
     overflow-y: hidden
     align-items: center
     font-size: .8em
-    padding: 1em 0
+    padding-bottom: 1em
     &__element
         padding: .1em .5em
         display: inline-block

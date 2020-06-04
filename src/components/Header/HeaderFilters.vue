@@ -2,7 +2,7 @@
     <div>
         <v-available-filters :filters="Object.keys(filters)" @active-filter="setActiveFilter" :activeFilter="activeFilter"/>
         <keep-alive>
-            <transition name="filter-options" :style="{height: '25px'}">
+            <transition name="filter-options">
             <v-available-options
                 v-if="activeFilter !== null"
                 @option-click="changeOption(activeFilter, $event)"
@@ -24,6 +24,8 @@ import AvailableOptions from './Filters/AvailableOptions.vue';
 import { filters } from '@/enums/Filters';
 import pokemonFilterService from '@/services/pokemonFilterService';
 import { Queries } from '@/classes/Queries';
+import { Route, Next } from 'vue-router';
+
 @Component({
     components: {
         'v-available-filters': AvailableFilters,
@@ -73,9 +75,13 @@ export default class HeaderFilters extends Vue {
 <style lang="sass">
 .filter-options-enter-active, .filter-options-leave-active 
     transition-duration: .5s
+    transition-timing-function: ease-out
     opacity: 1
-    max-height: 2.7em
+    padding-bottom: 1em
+    max-height: 2em
 
 .filter-options-enter, .filter-options-leave-to
+    padding: 0
+    opacity: 0
     max-height: 0
 </style>
