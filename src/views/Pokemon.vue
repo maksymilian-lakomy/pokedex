@@ -92,6 +92,7 @@ export default class Pokemon extends Mixins(StringFilters) {
                 evolutionData
             );
             next(vm => {
+                window.scrollTo(0, 0);
                 vm.evolutionData = evolutionData;
             });
         } catch (e) {

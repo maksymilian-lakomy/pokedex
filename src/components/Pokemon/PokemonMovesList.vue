@@ -109,7 +109,7 @@ export default class PokemonMovesList extends Mixins(StringFilters) {
         display: flex
         &__button
             display: inline-block
-            margin-right: .25em
+            margin-right: .75em
             color: inherit
             cursor: pointer
             font-family: inherit
