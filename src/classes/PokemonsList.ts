@@ -37,7 +37,7 @@ export class PokemonsSpeciesList {
         const names = Object.keys(this._pokemonsSpeciesUrls);
         const urls: Array<string> = [];
         names.forEach(name => {
-            if (name.startsWith(search) || (this._customFiltersByNames !== null && this._customFiltersByNames.includes(name)))
+            if (name.startsWith(search) && (this._customFiltersByNames === null || this._customFiltersByNames.includes(name)))
                 urls.push(this._pokemonsSpeciesUrls[name]);
         })
         return urls;

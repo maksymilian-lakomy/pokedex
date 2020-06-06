@@ -1,5 +1,5 @@
 <template>
-    <button>
+    <button @click="toggleFavorites">
         <v-heart-decorator />
     </button>
 </template>
@@ -18,6 +18,24 @@ import { Queries } from '@/classes/Queries';
     }
 })
 export default class HeaderClear extends Vue {
+
+    async toggleFavorites() {
+        if (this.queries.has('f'))
+            this.queries.setQuery('f', '');
+        else
+            this.queries.setQuery('f', 'show');
+        this.queries.setQuery('p', (1).toString());
+        try {
+            await this.$router.push({
+                path: '/',
+                params: this.$route.params,
+                query: this.queries.queries
+            });
+        } catch (e) {
+            return;
+        }
+        
+    }
 
     get queries(): Queries {
         return new Queries(this.$route.query);

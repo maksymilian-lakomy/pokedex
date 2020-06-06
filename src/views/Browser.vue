@@ -34,6 +34,7 @@ import NotFound from '@/components/Views/NotFound.vue';
 import pokemonSpeciesService from '@/services/pokemonSpeciesService';
 import PokemonSpeciesData from '@/classes/PokemonSpeciesData';
 import { PokemonsSpeciesList } from '@/classes/PokemonsList';
+import { FavoritesStore } from '@/classes/FavoritesStore';
 
 import { MetaInfo } from 'vue-meta';
 
@@ -63,6 +64,8 @@ export default class Browser extends Vue {
     private pokemonSpecies = new Array<PokemonSpeciesData>();
     private pageUrls: Array<string> = [];
     private loading = true;
+    
+    private favoritesStore = new FavoritesStore();
 
     get searchQuery(): string | null {
         if (this.queries.has('search'))
@@ -130,11 +133,16 @@ export default class Browser extends Vue {
         )
             search = '';
 
+        let favorites: Array<string> | undefined = undefined;
+        if (queries.has('f') && queries.queries['f'][0] === 'show')
+            favorites = this.favoritesStore.pokemonsArray;
+
         this.pokemonsSpeciesList.setOptions({
-            filters: newFilters,
-            page,
-            search
-        });
+                filters: newFilters,
+                customFiltersByNames: favorites,
+                page,
+                search
+            });
         if (newFilters !== undefined)
             await this.pokemonsSpeciesList.reloadSpeciesList();
 

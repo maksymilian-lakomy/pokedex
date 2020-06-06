@@ -20,7 +20,7 @@
             :class="{'pokemon-card__portrait__img--filter': this.filterPortrait, ...customClasses}"
             :src="pokemonData.sprites.frontDefault"
             @load="onLoaded($event)"
-            v-show="loaded && pokemonData.sprites.frontDefault !== null"
+            v-show="loaded"
         />
     </div>
 </template>
@@ -37,7 +37,9 @@ export default class PokemonPortrait extends Vue {
     pokemonData!: PokemonData;
 
     @Watch('pokemonData')
-    onPokemonDataChange() {
+    onPokemonDataChange(current: PokemonData, previous: PokemonData) {
+        if (current.sprites.frontDefault === previous.sprites.frontDefault)
+            return;
         this.loaded = false;
     }
 
