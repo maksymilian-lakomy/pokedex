@@ -12,6 +12,7 @@
   "dependencies": {
     "axios": "^0.19.2",
     "core-js": "^3.6.4",
+    "lz-string": "git+https://github.com/pieroxy/lz-string.git",
     "vue": "^2.6.11",
     "vue-class-component": "^7.2.3",
     "vue-meta": "^2.3.3",

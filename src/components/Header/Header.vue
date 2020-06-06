@@ -6,6 +6,7 @@
             <v-header-filters />
             <div id="header__bottom-menu__right">
                 <v-header-clear v-if="hasActiveQueries" />
+                <v-header-favorites />
             </div>
         </div>
     </header>
@@ -20,6 +21,7 @@ import HeaderSearch from '@/components/Header/HeaderSearch.vue';
 import HeaderFilters from '@/components/Header/HeaderFilters.vue';
 
 import HeaderClear from '@/components/Header/HeaderClear.vue';
+import HeaderFavorites from './HeaderFavorites.vue';
 
 import { Queries } from '@/classes/Queries';
 import { filters } from '@/enums/Filters';
@@ -29,7 +31,8 @@ import { filters } from '@/enums/Filters';
         'v-header-name': HeaderName,
         'v-header-search': HeaderSearch,
         'v-header-filters': HeaderFilters,
-        'v-header-clear': HeaderClear
+        'v-header-clear': HeaderClear,
+        'v-header-favorites': HeaderFavorites
     }
 })
 export default class Header extends Vue {
@@ -57,6 +60,7 @@ export default class Header extends Vue {
         position: relative
 
         &__right
+            display: flex
             position: absolute
             right: 0
             top: 0
