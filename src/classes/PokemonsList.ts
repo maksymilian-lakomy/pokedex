@@ -10,6 +10,7 @@ function intersection(obj1: Record<string, string>, obj2: Record<string, string>
 
 interface Options {
     filters?: Record<string, Array<string>>;
+    customFiltersByNames?: Array<string> | null;
     search?: string;
     page?: number;
 }
@@ -18,6 +19,8 @@ export class PokemonsSpeciesList {
     private _pokemonsSpeciesUrls: Record<string, string> = {};
 
     private _filters: Record<string, Array<string>> | null = null;
+
+    private _customFiltersByNames: Array<string> | null = null;
 
     public get filters(): Readonly<Record<string, Array<string>>> | null{
         return this._filters;
@@ -34,7 +37,7 @@ export class PokemonsSpeciesList {
         const names = Object.keys(this._pokemonsSpeciesUrls);
         const urls: Array<string> = [];
         names.forEach(name => {
-            if (name.startsWith(search))
+            if (name.startsWith(search) || (this._customFiltersByNames !== null && this._customFiltersByNames.includes(name)))
                 urls.push(this._pokemonsSpeciesUrls[name]);
         })
         return urls;
@@ -83,8 +86,9 @@ export class PokemonsSpeciesList {
             await this.loadPokemonsSpeciesMap();
     }
 
-    public setOptions({ filters, page, search }: Options) {
+    public setOptions({ filters, customFiltersByNames = null, page, search }: Options) {
         if (filters !== undefined) this._filters = filters;
+        this._customFiltersByNames = customFiltersByNames;
         if (page !== undefined) this._currentPage = page;
         if (search !== undefined) this._search = search;
     }
