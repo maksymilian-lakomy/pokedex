@@ -23,6 +23,7 @@ export default class HeaderSearch extends Vue {
         const searchString = event.target.value;
 
         this.queries.setQuery('search', event.target.value);
+        this.queries.setQuery('p', (1).toString());
 
         try {
             await this.$router.push({
