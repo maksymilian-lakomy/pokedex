@@ -10,12 +10,17 @@
             :generation="generation"
             :customClasses="{'pokemon-card__portrait__img--browser': true, 'pokemon-card__portrait__img--browser--active': active}"
         >
+            <div class="pokemon-card__top-wrapper">
             <transition name="slide">
                 <div
-                    class="pokemon-card__portrait__additional-info"
+                    class="pokemon-card__additional-info"
                     v-show="active"
                 >{{pokemonSpecies.varieties.length}}</div>
             </transition>
+            <div class="pokemon-card__favorite-button__wrapper">
+                <v-favorite-button :name="pokemonData.name"/>
+            </div>
+            </div>
         </v-pokemon-portrait>
         <div class="pokemon-card__info">
             <div class="pokemon-card__info__label">
@@ -38,14 +43,18 @@
 import Vue from 'vue';
 import Component from 'vue-class-component';
 
+import PokemonCardFavoriteButton from './PokemonCard/PokemonCardFavoriteButton.vue';
+
 import PokemonSpeciesData from '@/classes/PokemonSpeciesData';
 import PokemonTagsList from '@/components/Views/PokemonTagsList.vue';
 import PokemonPortrait from '@/components/Views/PokemonPortrait.vue';
 import { Prop, Mixins } from 'vue-property-decorator';
 import { StringFilters } from '@/mixins/StringFilters';
+import { FavoritesStore } from '@/classes/FavoritesStore';
 
 @Component({
     components: {
+        'v-favorite-button': PokemonCardFavoriteButton,
         'v-pokemon-tags-list': PokemonTagsList,
         'v-pokemon-portrait': PokemonPortrait
     }
@@ -69,6 +78,10 @@ export default class BrowserPokemonCard extends Mixins(StringFilters) {
     get tags() {
         return [...this.pokemonData.tags];
     }
+
+    get isPokemonFavorite() {
+        return FavoritesStore.isFavorite(this.pokemonSpecies.name);
+    }
 }
 </script>
 
@@ -88,14 +101,29 @@ export default class BrowserPokemonCard extends Mixins(StringFilters) {
             transform: translateY(.5em)
             opacity: 1
 
-        &__additional-info
-            z-index: 1
-            font-weight: bolder
-            position: absolute
-            top: 0
-            right: 0
-            padding: .5em .75em
-            color: #707070
+    &__top-wrapper
+        padding: .5em .75em
+        top: 0
+        position: absolute
+        display: flex
+        width: calc(100% - 2 * .75em)
+
+        @media (max-width: 840px)
+            font-size: 2em
+        @media (max-width: 320px)
+            font-size: 2.5em
+
+
+    &__additional-info
+        z-index: 1
+        font-weight: bolder
+        color: #707070
+    
+    &__favorite-button__wrapper
+        margin-left: auto
+        width: 1.5em
+        height: 1.5em
+        z-index: 1
 
     &__info
         text-align: left

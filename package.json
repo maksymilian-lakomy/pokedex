@@ -10,6 +10,8 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@types/animejs": "^3.1.1",
+    "animejs": "^3.2.0",
     "axios": "^0.19.2",
     "core-js": "^3.6.4",
     "lz-string": "git+https://github.com/pieroxy/lz-string.git",

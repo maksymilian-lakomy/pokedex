@@ -7,7 +7,7 @@
             class="pokemon-card__portrait__img pokemon-card__portrait__img--placeholder"
             src="@/assets/pokemon-placeholder.png"
             @load="setColumnSize()"
-            v-if="!loaded"
+            v-show="!loaded"
         />
         <span
             class="pokemon-card__portrait__img--placeholder__message"

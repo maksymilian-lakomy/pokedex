@@ -1,6 +1,6 @@
 <template>
     <button @click="toggleFavorites">
-        <v-heart-decorator />
+        <v-heart-decorator :isActive="isActive"/>
     </button>
 </template>
 
@@ -34,7 +34,10 @@ export default class HeaderClear extends Vue {
         } catch (e) {
             return;
         }
-        
+    }
+
+    get isActive(): boolean {
+        return this.queries.has('f', 'show');
     }
 
     get queries(): Queries {
