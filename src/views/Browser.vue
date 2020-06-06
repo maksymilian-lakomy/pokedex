@@ -26,10 +26,10 @@ import Vue from 'vue';
 import Component from 'vue-class-component';
 import { Watch } from 'vue-property-decorator';
 
-import BrowserPagination from '@/components/Browser/BrowserPagination.vue';
-import BrowserList from '@/components/Browser/BrowserList.vue';
-import BrowserLoading from '@/components/Browser/BrowserLoading.vue';
-import NotFound from '@/components/NotFound.vue';
+import BrowserPagination from '@/components/Views/Browser/BrowserPagination.vue';
+import BrowserList from '@/components/Views/Browser/BrowserList.vue';
+import BrowserLoading from '@/components/Views/Browser/BrowserLoading.vue';
+import NotFound from '@/components/Views/NotFound.vue';
 
 import pokemonSpeciesService from '@/services/pokemonSpeciesService';
 import PokemonSpeciesData from '@/classes/PokemonSpeciesData';

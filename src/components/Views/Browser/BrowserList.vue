@@ -49,22 +49,22 @@ export default class BrowserList extends Vue {
     min-height: 512px
     padding: 0
     display: grid
-    grid-template-columns: repeat(6, 198px)
+    grid-template-columns: repeat(6, 1fr)
     column-gap: 1.25em
     row-gap: 2em
     justify-content: center
     @media (max-width: 1640px)
-        grid-template-columns: repeat(5, 198px)
+        grid-template-columns: repeat(5, 1fr)
     @media (max-width: 1440px)
-        grid-template-columns: repeat(4, 198px)
+        grid-template-columns: repeat(4, 1fr)
     @media (max-width: 1140px)
-        grid-template-columns: repeat(3, 198px)
+        grid-template-columns: repeat(3, 1fr)
     @media (max-width: 840px)
-        grid-template-columns: repeat(2, 198px)
+        grid-template-columns: repeat(2, 1fr)
     @media (max-width: 480px)
-        grid-template-columns: repeat(1, 288px)
+        grid-template-columns: repeat(1, 1fr)
     @media (max-width: 320px)
-        grid-template-columns: repeat(1, 198px)
+        grid-template-columns: repeat(1, 1fr)
 
     &__loading
         position: absolute

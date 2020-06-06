@@ -8,7 +8,7 @@
 
 <script lang="ts">
 import Component from "vue-class-component";
-import PokemonTag from "./PokemonTag.vue";
+import PokemonTag from "./PokemonTagsList/PokemonTag.vue";
 import { Mixins, Prop } from "vue-property-decorator";
 import { StringFilters } from "@/mixins/StringFilters";
 import PokemonData from "@/classes/PokemonData";

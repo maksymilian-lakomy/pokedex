@@ -2,7 +2,7 @@
     <v-layout-main>
         <div class="pokemon-overview" v-if="currentVariety">
             <div class="pokemon-overview__left">
-                <v-pokemon-main :pokemonData="currentVariety" :filterPortrait="filterPortrait" />
+                <v-pokemon-portrait :pokemonData="currentVariety" :generation="generation" />
                 <v-pokemon-tags-list :pokemonData="currentVariety" />
                 <v-pokemon-data-description :pokemonSpeciesData="currentSpecies" />
                 <v-pokemon-abilities-list :pokemonData="currentVariety" />
@@ -42,14 +42,14 @@ import { parseQuery } from '@/mixins/parseQuery';
 
 import { MetaInfo } from 'vue-meta';
 
-import PokemonMain from '@/components/Pokemon/PokemonMain.vue';
-import PokemonEvolutions from '@/components/Pokemon/PokemonEvolutions.vue';
-import PokemonDataDescription from '@/components/Pokemon/PokemonDataDescription.vue';
-import PokemonAbilitiesList from '@/components/Pokemon/PokemonAbilitiesList.vue';
-import PokemonStatsList from '@/components/Pokemon/PokemonStatsList.vue';
-import PokemonMovesList from '@/components/Pokemon/PokemonMovesList.vue';
-import PokemonVarietiesList from '@/components/Pokemon/PokemonVarietiesList.vue';
-import PokemonTagsList from '@/components/Pokemon/PokemonTagsList.vue';
+import PokemonPortrait from '@/components/Views/PokemonPortrait.vue';
+import PokemonEvolutions from '@/components/Views/Pokemon/PokemonEvolutions.vue';
+import PokemonDataDescription from '@/components/Views/Pokemon/PokemonDataDescription.vue';
+import PokemonAbilitiesList from '@/components/Views/Pokemon/PokemonAbilitiesList.vue';
+import PokemonStatsList from '@/components/Views/Pokemon/PokemonStatsList.vue';
+import PokemonMovesList from '@/components/Views/Pokemon/PokemonMovesList.vue';
+import PokemonVarietiesList from '@/components/Views/Pokemon/PokemonVarietiesList.vue';
+import PokemonTagsList from '@/components/Views/PokemonTagsList.vue';
 import PokemonData from '@/classes/PokemonData';
 
 import Main from '@/Layouts/Main.vue';
@@ -59,7 +59,7 @@ Component.registerHooks(['beforeRouteEnter', 'beforeRouteUpdate']);
 @Component<Pokemon>({
     components: {
         'v-layout-main': Main,
-        'v-pokemon-main': PokemonMain,
+        'v-pokemon-portrait': PokemonPortrait,
         'v-pokemon-data-description': PokemonDataDescription,
         'v-pokemon-abilities-list': PokemonAbilitiesList,
         'v-pokemon-stats-list': PokemonStatsList,
@@ -137,13 +137,8 @@ export default class Pokemon extends Mixins(StringFilters) {
         return queries['v'] ? parseInt(queries['v'][0]) : 0;
     }
 
-    get filterPortrait() {
-        if (!this.currentSpecies) return false;
-        return (
-            ['generation-vii', 'getneration-viii'].indexOf(
-                this.currentSpecies!.generation.name
-            ) !== -1
-        );
+    get generation(): string {
+        return this.currentSpecies!.generation.name;
     }
 }
 </script>
@@ -157,8 +152,6 @@ export default class Pokemon extends Mixins(StringFilters) {
     grid-template-areas: "description overview varieties"
     column-gap: 2em
     color: $dark-gray
-    @media (max-width: 1640px)
-        grid-template-columns: min-content 1fr min-content
     @media (max-width: 1140px)
         grid-template-columns: repeat(2, calc(50% - 2em / 2))
         grid-template-areas: "description overview" "varieties varieties"
