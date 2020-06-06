@@ -2,7 +2,11 @@
     <v-layout-main>
         <div class="pokemon-overview" v-if="currentVariety">
             <div class="pokemon-overview__left">
-                <v-pokemon-portrait :pokemonData="currentVariety" :generation="generation" />
+                <v-pokemon-portrait :pokemonData="currentVariety" :generation="generation">
+                    <div class="pokemon-overview__portrait-top-wrapper">
+                        <v-favorite-button class="pokemon-overview__portrait-top-wrapper__button" :name="currentSpecies.name"/>
+                    </div>
+                </v-pokemon-portrait>
                 <v-pokemon-tags-list :pokemonData="currentVariety" />
                 <v-pokemon-data-description :pokemonSpeciesData="currentSpecies" />
                 <v-pokemon-abilities-list :pokemonData="currentVariety" />
@@ -52,6 +56,8 @@ import PokemonVarietiesList from '@/components/Views/Pokemon/PokemonVarietiesLis
 import PokemonTagsList from '@/components/Views/PokemonTagsList.vue';
 import PokemonData from '@/classes/PokemonData';
 
+import PokemonCardFavoriteButton from '@/components/Views/Browser/PokemonCard/PokemonCardFavoriteButton.vue';
+
 import Main from '@/Layouts/Main.vue';
 
 Component.registerHooks(['beforeRouteEnter', 'beforeRouteUpdate']);
@@ -59,6 +65,7 @@ Component.registerHooks(['beforeRouteEnter', 'beforeRouteUpdate']);
 @Component<Pokemon>({
     components: {
         'v-layout-main': Main,
+        'v-favorite-button': PokemonCardFavoriteButton,
         'v-pokemon-portrait': PokemonPortrait,
         'v-pokemon-data-description': PokemonDataDescription,
         'v-pokemon-abilities-list': PokemonAbilitiesList,
@@ -158,6 +165,20 @@ export default class Pokemon extends Mixins(StringFilters) {
     @media (max-width: 768px)
         grid-template-columns: repeat(1, 100%)      
         grid-template-areas: "description" "overview" "varieties"
+
+    &__portrait-top-wrapper
+        position: absolute
+        top: 0
+        left: 0
+        padding: 1em
+
+        &__button
+            width: 2em
+            height: 2em
+
+            @media (max-width: 1140px)
+                font-size: 1.5em
+
 
     &__left
         grid-area: description
