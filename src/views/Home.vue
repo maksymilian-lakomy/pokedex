@@ -1,7 +1,7 @@
 <template>
   <div class="home">
     <ol class="pokemons-list">
-      <li v-for="(pokemon, i) in pokemonsWithSprites" :key="i">
+      <li v-for="(pokemon, i) in pokemonsReferencePage" :key="i">
         <v-pokemon-tile :pokemonWithSprites="pokemon" />
       </li>
     </ol>
@@ -11,11 +11,12 @@
 <script lang="ts">
 import Vue from 'vue';
 
-import { PokemonsSpeciesService, PokemonSpritesService } from '@/services';
+import { PokemonsSpeciesService, PokemonSpritesService, PokemonsFilterService } from '@/services';
 import { Pokemon, PokemonsReferencePage } from '@/models';
 
 import { PokemonsWithSprites } from '@/components/pokemon-tile.models';
 import PokemonTileComponent from '@/components/pokemon-tile.component.vue';
+import { PokemonsService } from '@/services/pokemons.service';
 
 /* eslint-disable prefer-const */
 let pokemonsReferencePage: PokemonsReferencePage.PokemonsReferencePageModel | null = null;
@@ -33,32 +34,20 @@ export default Vue.extend({
 
   async beforeRouteEnter(to, from, next) {
     try {
-      const response = await PokemonsSpeciesService.getAll({
-        limit: 20,
-        offset: 0,
-      });
+      const pokemonService = new PokemonsService(50);
+      pokemonService.addFilter(PokemonsFilterService.FilterType.COLORS, 'yellow');
+      pokemonService.addFilter(PokemonsFilterService.FilterType.SHAPES, 'wings');
+      const page = await pokemonService.getPokemons(1);
+      console.log(page);
 
       next((vm) => {
-        vm.$set(vm.$data, 'pokemonsReferencePage', response.data);
+        vm.$set(vm.$data, 'pokemonsReferencePage', page);
       });
     } catch (error) {
       console.error(error);
     }
   },
 
-  computed: {
-    pokemonsWithSprites(): PokemonsWithSprites[] | [] {
-      if (this.pokemonsReferencePage) {
-        return this.pokemonsReferencePage.results.map((result) => {
-          return {
-            ...result,
-            sprites: PokemonSpritesService.getSprites(result.url),
-          };
-        });
-      }
-      return [];
-    },
-  },
 });
 </script>
 

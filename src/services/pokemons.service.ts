@@ -8,6 +8,117 @@ import { Pokemon, PokemonFilters, PokemonsReferencePage } from '@/models';
 
 type FilterType = PokemonsFilterService.FilterType;
 
+abstract class Pokemons {
+  public abstract async getPokemons(
+    offset: number,
+    limit: number
+  ): Promise<PokemonsWithSprites[]>;
+}
+
+class AllPokemons extends Pokemons {
+  public async getPokemons(
+    offset: number,
+    limit: number
+  ): Promise<PokemonsWithSprites[]> {
+    const response = await PokemonsSpeciesService.getAll({ offset, limit });
+
+    return response.data.results.map((pokemon) => {
+      return {
+        ...pokemon,
+        sprites: PokemonSpritesService.getSprites(pokemon.url),
+      };
+    });
+  }
+}
+
+class FilteredPokemons extends Pokemons {
+  constructor(private filters: Map<FilterType, (string | number)[]>) {
+    super();
+  }
+
+  public async getPokemons(
+    offset: number,
+    limit: number
+  ): Promise<PokemonsWithSprites[]> {
+    const filteredPokemons = (await this.getPokemonFromAPI()).map((pokemon) => {
+      return {
+        ...pokemon,
+        sprites: PokemonSpritesService.getSprites(pokemon.url),
+      };
+    });
+
+    return filteredPokemons;
+  }
+
+  private async getPokemonFromAPI(): Promise<PokemonFilters.PokemonSpecy[]> {
+    const promises: Partial<Record<
+      FilterType,
+      Promise<AxiosResponse<PokemonFilters.PokemonFiltersModel>>[]
+    >> = {};
+
+    this.filters.forEach((filters, filtersName) => {
+      filters.forEach((filter) => {
+        console.log(filter);
+
+        if (promises[filtersName]) {
+          promises[filtersName]!.push(
+            PokemonsFilterService.getAll(filtersName, filter)
+          );
+        } else {
+          promises[filtersName] = [
+            PokemonsFilterService.getAll(filtersName, filter),
+          ];
+        }
+      });
+    });
+
+    let list: PokemonFilters.PokemonSpecy[] = [];
+
+    await Promise.all(
+      Object.values(promises).map(async (_promises) => {
+        const responses = await Promise.all(_promises!);
+
+        if (!list.length) {
+          list = this.getUniquePokemonsFromResponses(responses);
+        } else {
+          list = this.intersectPokemons(
+            list,
+            this.getUniquePokemonsFromResponses(responses)
+          );
+        }
+      })
+    );
+
+    return list;
+  }
+
+  private getUniquePokemonsFromResponses(
+    responses: AxiosResponse<PokemonFilters.PokemonFiltersModel>[]
+  ): PokemonFilters.PokemonSpecy[] {
+    const uniquePokemons: Record<string, PokemonFilters.PokemonSpecy> = {};
+
+    responses.forEach((response) => {
+      response.data.pokemon_species.forEach((pokemonSpecies) => {
+        uniquePokemons[pokemonSpecies.name] = pokemonSpecies;
+      });
+    });
+
+    return Object.values(uniquePokemons);
+  }
+
+  private intersectPokemons(
+    list: PokemonFilters.PokemonSpecy[],
+    secondList: PokemonFilters.PokemonSpecy[]
+  ): PokemonFilters.PokemonSpecy[] {
+    return list.filter(
+      (pokemon) =>
+        secondList.findIndex(
+          (secondPokemon) => secondPokemon.name === pokemon.name
+        ) !== -1
+    );
+  }
+}
+
 export class PokemonsService {
   private filters = new Map<FilterType, (string | number)[]>();
 
@@ -62,103 +173,5 @@ export class PokemonsService {
 
   private offset(page: number): number {
     return (page - 1) * this.limit;
-  }
-}
-
-abstract class Pokemons {
-  public abstract async getPokemons(
-    offset: number,
-    limit: number
-  ): Promise<PokemonsWithSprites[]>;
-}
-
-class AllPokemons extends Pokemons {
-  public async getPokemons(
-    offset: number,
-    limit: number
-  ): Promise<PokemonsWithSprites[]> {
-    const response = await PokemonsSpeciesService.getAll({ offset, limit });
-
-    return response.data.results.map((pokemon) => {
-      return {
-        ...pokemon,
-        sprites: PokemonSpritesService.getSprites(pokemon.url),
-      };
-    });
-  }
-}
-
-class FilteredPokemons extends Pokemons {
-  constructor(private filters: Map<FilterType, (string | number)[]>) {
-    super();
-  }
-
-  public async getPokemons(
-    offset: number,
-    limit: number
-  ): Promise<PokemonsWithSprites[]> {
-    const filteredPokemons = (await this.getPokemonFromAPI()).map((pokemon) => {
-      return {
-        ...pokemon,
-        sprites: PokemonSpritesService.getSprites(pokemon.url),
-      };
-    });
-
-    return filteredPokemons;
-  }
-
-  private async getPokemonFromAPI(): Promise<PokemonFilters.PokemonSpecy[]> {
-    const promises = new Map<
-      FilterType,
-      Promise<AxiosResponse<PokemonFilters.PokemonFiltersModel>>[]
-    >();
-
-    this.filters.forEach((filters, filtersName) => {
-      filters.forEach((filter) => {
-        if (promises.has(filtersName)) {
-          promises
-            .get(filtersName)!
-            .push(PokemonsFilterService.getAll(filtersName, filter));
-        }
-      });
-    });
-
-    let list: PokemonFilters.PokemonSpecy[] = [];
-
-    promises.forEach(async (_promises) => {
-      const responses = await Promise.all(_promises);
-
-      if (!list.length) {
-        list = this.getUniquePokemonsFromResponses(responses);
-      } else {
-        list = this.intersectPokemons(
-          list,
-          this.getUniquePokemonsFromResponses(responses)
-        );
-      }
-    });
-
-    return list;
-  }
-
-  private getUniquePokemonsFromResponses(
-    responses: AxiosResponse<PokemonFilters.PokemonFiltersModel>[]
-  ): PokemonFilters.PokemonSpecy[] {
-    const uniquePokemons: Record<string, PokemonFilters.PokemonSpecy> = {};
-
-    responses.forEach((response) => {
-      response.data.pokemon_species.forEach((pokemonSpecies) => {
-        uniquePokemons[pokemonSpecies.name] = pokemonSpecies;
-      });
-    });
-
-    return Object.values(uniquePokemons);
-  }
-
-  private intersectPokemons(
-    list: PokemonFilters.PokemonSpecy[],
-    secondList: PokemonFilters.PokemonSpecy[]
-  ): PokemonFilters.PokemonSpecy[] {
-    return list.filter((pokemon) => secondList.includes(pokemon));
   }
 }

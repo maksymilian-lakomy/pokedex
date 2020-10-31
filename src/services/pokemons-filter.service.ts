@@ -12,10 +12,11 @@ export namespace PokemonsFilterService {
   }
 
   export const getAll = async (
-    filter: FilterType
+    filterType: FilterType,
+    filter: string | number
   ): Promise<AxiosResponse<PokemonFiltersModel>> => {
     const response: AxiosResponse<PokemonFiltersModel> = await service.get(
-      `${filter}/`
+      `${filterType}/${filter}`
     );
 
     return response;
