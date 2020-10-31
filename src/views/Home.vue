@@ -1,18 +1,28 @@
 <template>
   <div class="home">
     <img alt="Vue logo" src="../assets/logo.png" />
-    <HelloWorld msg="Welcome to Your Vue.js App" />
   </div>
 </template>
 
-<script>
-// @ is an alias to /src
-import HelloWorld from "@/components/HelloWorld.vue";
+<script lang="ts">
+import Vue from 'vue';
 
-export default {
-  name: "Home",
-  components: {
-    HelloWorld
-  }
-};
+import {PokemonsSpeciesService, PokemonSpritesService} from "@/services";
+
+export default Vue.extend({
+  async beforeRouteEnter(to, from, next) {
+    try {
+      const response = await PokemonsSpeciesService.getAll();
+
+      console.log(response.data);
+
+      response.data.results.forEach(result => {
+        console.log(PokemonSpritesService.getSprites(result.url));
+      });
+
+    } catch (error) {
+      console.error(error);
+    }
+  },
+});
 </script>
