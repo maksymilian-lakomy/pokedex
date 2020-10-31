@@ -11,12 +11,16 @@
 <script lang="ts">
 import Vue from 'vue';
 
-import { PokemonsSpeciesService, PokemonSpritesService, PokemonsFilterService } from '@/services';
+import {
+  PokemonsSpeciesService,
+  PokemonSpritesService,
+  PokemonsFilterService,
+} from '@/services';
 import { Pokemon, PokemonsReferencePage } from '@/models';
 
 import { PokemonsWithSprites } from '@/components/pokemon-tile.models';
 import PokemonTileComponent from '@/components/pokemon-tile.component.vue';
-import { PokemonsService } from '@/services/pokemons.service';
+import { PokemonsManager } from '@/classes/pokemons-manager.class';
 
 /* eslint-disable prefer-const */
 let pokemonsReferencePage: PokemonsReferencePage.PokemonsReferencePageModel | null = null;
@@ -34,11 +38,9 @@ export default Vue.extend({
 
   async beforeRouteEnter(to, from, next) {
     try {
-      const pokemonService = new PokemonsService(50);
+      const pokemonService = new PokemonsManager(50);
       pokemonService.addFilter(PokemonsFilterService.FilterType.COLORS, 'yellow');
-      pokemonService.addFilter(PokemonsFilterService.FilterType.SHAPES, 'wings');
-      const page = await pokemonService.getPokemons(1);
-      console.log(page);
+      const page = await pokemonService.getPokemons(2);
 
       next((vm) => {
         vm.$set(vm.$data, 'pokemonsReferencePage', page);
@@ -47,7 +49,6 @@ export default Vue.extend({
       console.error(error);
     }
   },
-
 });
 </script>
 
