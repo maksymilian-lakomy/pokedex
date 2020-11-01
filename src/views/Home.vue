@@ -55,7 +55,9 @@ export default Vue.extend({
 <style lang="scss" scoped>
 .pokemons-list {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(8, 1fr);
+  column-gap: 1rem;
+  row-gap: 1rem;
   list-style: none;
   padding: 0;
   margin: 0;

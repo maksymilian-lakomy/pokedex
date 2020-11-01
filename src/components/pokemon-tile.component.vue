@@ -38,7 +38,6 @@ export default Vue.extend({
   },
   methods: {
     calculateMaxWidth(): void {
-      console.log(calculatePokemonSpriteWidth(this.$el, 96));
       this.maxWidth = `${calculatePokemonSpriteWidth(this.$el, 96) / 16}rem`;
     },
   },
@@ -70,7 +69,6 @@ export default Vue.extend({
     position: relative;
     background-color: #e9e9e9;
     border-radius: 1rem;
-    cursor: pointer;
 
     &::after {
       content: '';
@@ -83,10 +81,10 @@ export default Vue.extend({
     transition: opacity ease-out 0.1s;
     font-size: 1em;
     position: absolute;
-    color: #cccccc;
+    color: #707070;
     left: 50%;
     top: 0%;
-    opacity: 0.75;
+    opacity: 0.25;
     transform: translate(-50%, 0);
     line-height: 1;
     font-weight: bold;
@@ -105,7 +103,12 @@ export default Vue.extend({
   }
 
   &__name {
+    color: #707070;
+    margin: 0.5rem 1rem;
     font-weight: bold;
+    display: block;
+    text-align: left;
+    font-size: 1.25rem;
 
     &::first-letter {
       text-transform: uppercase;
@@ -113,8 +116,10 @@ export default Vue.extend({
   }
 
   &:hover {
+    cursor: pointer;
+
     #{$block-name}__id {
-      opacity: 1;
+      opacity: 0.5;
     }
 
     #{$block-name}__sprite {
