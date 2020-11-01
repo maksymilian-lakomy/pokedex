@@ -1,12 +1,12 @@
 <template>
   <div class="pagination">
     <router-link
-      :to="routerDestination(n + surroundingPages[0] - 1)"
+      :to="routerDestination(n)"
       class="pagination__element"
-      v-for="n in surroundingPagesAmount + 1"
+      v-for="n in surroundingPages"
       :key="n"
     >
-      {{ n + surroundingPages[0] - 1 }}
+      {{ n }}
     </router-link>
   </div>
 </template>
@@ -36,10 +36,7 @@ export default Vue.extend({
       rest = Math.abs(max - current - 2);
       min = Math.max(min - rest, 1);
 
-      return [min, max];
-    },
-    surroundingPagesAmount(): number {
-      return this.surroundingPages[1] - this.surroundingPages[0];
+      return new Array(max - min + 1).fill(0).map((value, i) => i + min);
     },
   },
   props: {
@@ -57,18 +54,28 @@ export default Vue.extend({
 
 <style lang="scss" scoped>
 .pagination {
+
   display: flex;
-  flex-direction: none;
+  flex-direction: row;
   list-style: none;
+  width: fit-content;
+  margin: 1rem 1rem;
 
   &__element {
+    transition: opacity ease-out .25s;
     font-weight: bold;
     font-size: 1.25rem;
     color: inherit;
     text-decoration: unset;
+    opacity: .5;
+
+    &.router-link-exact-active {
+      opacity: 1;
+    }
 
     &:hover {
       cursor: pointer;
+      opacity: 1;
     }
 
     &:not(:last-child) {
