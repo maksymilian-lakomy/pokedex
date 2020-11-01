@@ -1,5 +1,6 @@
 <template>
   <div class="home">
+    <v-pagination :count="45" :current="45"/>
     <ol class="pokemons-list">
       <li v-for="(pokemon, i) in pokemonsReferencePage" :key="i">
         <v-pokemon-tile :pokemonWithSprites="pokemon" />
@@ -18,8 +19,11 @@ import {
 } from '@/services';
 import { Pokemon, PokemonsReferencePage } from '@/models';
 
+import PaginationComponent from "@/components/pagination.component.vue";
+
 import { PokemonsWithSprites } from '@/components/pokemon-tile.models';
 import PokemonTileComponent from '@/components/pokemon-tile.component.vue';
+
 import { PokemonsManager } from '@/classes/pokemons-manager.class';
 
 /* eslint-disable prefer-const */
@@ -27,6 +31,7 @@ let pokemonsReferencePage: PokemonsReferencePage.PokemonsReferencePageModel | nu
 
 export default Vue.extend({
   components: {
+    "v-pagination": PaginationComponent,
     'v-pokemon-tile': PokemonTileComponent,
   },
   data() {
