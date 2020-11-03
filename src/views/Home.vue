@@ -25,6 +25,8 @@ import { PokemonsWithSprites } from '@/components/pokemon-tile.models';
 import PokemonTileComponent from '@/components/pokemon-tile.component.vue';
 
 import { PokemonsManager } from '@/classes/pokemons-manager.class';
+import { Location } from 'vue-router';
+import { getFiltersFromRouteQueries } from '@/helpers';
 
 /* eslint-disable prefer-const */
 let pokemonsReferencePage: PokemonsWithSprites[] = [];
@@ -41,10 +43,25 @@ export default Vue.extend({
     };
   },
   async beforeRouteEnter(to, from, next) {
-    try {
-      const currentPage = +to.query.p || 1;
+    const currentPage = +to.query.p;
 
+    // GUARD: Is page query set?
+    if (!currentPage && to.name) {
+      const location: Location = {
+        name: to.name,
+        query: {
+          p: '1',
+        },
+      };
+
+      next(location);
+    }
+
+    try {
+      const queries = getFiltersFromRouteQueries(to);
       const pokemonService = new PokemonsManager(50);
+      pokemonService.setFilters(queries);
+
       const page = await pokemonService.getPokemons(currentPage);
 
       next((vm) => {
@@ -55,16 +72,21 @@ export default Vue.extend({
       console.error(error);
     }
   },
+
   async beforeRouteUpdate(to, from, next) {
     try {
+      // TODO: GUARD: Is page query set?
       const currentPage = +to.query.p;
 
+      const queries = getFiltersFromRouteQueries(to);
       const pokemonService = new PokemonsManager(50);
+      pokemonService.setFilters(queries);
+
       const page = await pokemonService.getPokemons(currentPage);
 
       this.$set(this.$data, 'pokemonsReferencePage', page);
       this.$set(this.$data, 'currentPage', currentPage);
-      
+
       next();
     } catch (error) {
       console.error(error);

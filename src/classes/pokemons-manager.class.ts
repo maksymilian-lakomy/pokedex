@@ -1,12 +1,9 @@
 import { PokemonsWithSprites } from '@/components/pokemon-tile.models';
-import { PokemonsFilterService } from '@/services';
 import { PokemonsPageDefault } from './pokemons-page/pokemons-page-default.class';
 import { PokemonsPageFiltered } from './pokemons-page/pokemons-page-filtered.class';
 import { PokemonsPage } from './pokemons-page/pokemons-page.class';
 
-type FilterType = PokemonsFilterService.FilterType;
-
-type Filters = Map<FilterType, (string | number)[]>;
+type Filters = Map<string, string[]>;
 
 export class PokemonsManager {
   private filters: Filters = new Map();
@@ -16,7 +13,7 @@ export class PokemonsManager {
     this.pokemonsPage = new PokemonsPageDefault();
   }
 
-  public addFilter(name: FilterType, value: string | number) {
+  public addFilter(name: string, value: string) {
     if (this.filters.has(name)) {
       this.filters.get(name)!.push(value);
     } else {
@@ -26,7 +23,13 @@ export class PokemonsManager {
     this.updatePokemonsType();
   }
 
-  public removeFilter(name: FilterType, value: string | number) {
+  public setFilters(filters: Filters) {
+    this.filters = filters;
+
+    this.updatePokemonsType();
+  }
+
+  public removeFilter(name: string, value: string) {
     if (!this.filters.has(name)) {
       return;
     }
@@ -44,6 +47,8 @@ export class PokemonsManager {
   }
 
   public async getPokemons(page: number): Promise<PokemonsWithSprites[]> {
+    // TODO: ADD POKEMON ID HERE!!!!
+
     const pokemons = await this.pokemonsPage.getPokemons(
       this.offset(page),
       this.limit

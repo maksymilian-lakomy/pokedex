@@ -3,6 +3,7 @@
     <router-link
       :to="routerDestination(n)"
       class="pagination__element"
+      :class="{ 'pagination__element--active': n === current }"
       v-for="n in surroundingPages"
       :key="n"
     >
@@ -22,6 +23,7 @@ export default Vue.extend({
       return {
         ...currentRoute,
         query: {
+          ...currentRoute.query,
           p: `${pageNumber}`,
         },
       };
@@ -54,7 +56,6 @@ export default Vue.extend({
 
 <style lang="scss" scoped>
 .pagination {
-
   display: flex;
   flex-direction: row;
   list-style: none;
@@ -62,14 +63,14 @@ export default Vue.extend({
   margin: 1rem 1rem;
 
   &__element {
-    transition: opacity ease-out .25s;
+    transition: opacity ease-out 0.25s;
     font-weight: bold;
     font-size: 1.25rem;
     color: inherit;
     text-decoration: unset;
-    opacity: .5;
+    opacity: 0.5;
 
-    &.router-link-exact-active {
+    &--active {
       opacity: 1;
     }
 

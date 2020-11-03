@@ -5,18 +5,14 @@ import { service } from './base.service';
 type PokemonFiltersModel = PokemonFilters.PokemonFiltersModel;
 
 export namespace PokemonsFilterService {
-  export enum FilterType {
-    COLORS = 'pokemon-color',
-    HABITATS = 'pokemon-habitat',
-    SHAPES = 'pokemon-shape',
-  }
+  export const availableFilters = ['color', 'habitat', 'shape'];
 
   export const getAll = async (
-    filterType: FilterType,
-    filter: string | number
+    filterType: string,
+    filter: string
   ): Promise<AxiosResponse<PokemonFiltersModel>> => {
     const response: AxiosResponse<PokemonFiltersModel> = await service.get(
-      `${filterType}/${filter}`
+      `pokemon-${filterType}/${filter}`
     );
 
     return response;

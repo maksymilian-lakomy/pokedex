@@ -6,9 +6,7 @@ import { PokemonSpritesService, PokemonsFilterService } from '@/services';
 
 import { PokemonsPage } from './pokemons-page.class';
 
-type FilterType = PokemonsFilterService.FilterType;
-
-type Filters = Map<FilterType, (string | number)[]>;
+type Filters = Map<string, string[]>;
 
 export class PokemonsPageFiltered extends PokemonsPage {
   private pokemons: PokemonsWithSprites[] | null = null;
@@ -21,7 +19,7 @@ export class PokemonsPageFiltered extends PokemonsPage {
     offset: number,
     limit: number
   ): Promise<PokemonsWithSprites[]> {
-    !this.pokemons && await this.fetchPokemons();
+    !this.pokemons && (await this.fetchPokemons());
 
     return this.pokemons!.slice(offset, offset + limit);
   }
@@ -38,7 +36,7 @@ export class PokemonsPageFiltered extends PokemonsPage {
 
   private async getPokemonFromAPI(): Promise<PokemonFilters.PokemonSpecy[]> {
     const promises: Partial<Record<
-      FilterType,
+      string,
       Promise<AxiosResponse<PokemonFilters.PokemonFiltersModel>>[]
     >> = {};
 
