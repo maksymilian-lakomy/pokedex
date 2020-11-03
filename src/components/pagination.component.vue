@@ -1,5 +1,11 @@
 <template>
   <div class="pagination">
+    <div v-if="isFirstPageVisible">
+      <router-link :to="routerDestination(1)" class="pagination__element">
+        1
+      </router-link>
+      . . .
+    </div>
     <router-link
       :to="routerDestination(n)"
       class="pagination__element"
@@ -8,6 +14,14 @@
       :key="n"
     >
       {{ n }}
+    </router-link>
+
+    <router-link
+      v-if="isLastPageVisible"
+      :to="routerDestination(count)"
+      class="pagination__element"
+    >
+      {{ count }}
     </router-link>
   </div>
 </template>
@@ -30,6 +44,14 @@ export default Vue.extend({
     },
   },
   computed: {
+    isFirstPageVisible(): boolean {
+      return this.surroundingPages[0] !== 1;
+    },
+    isLastPageVisible(): boolean {
+      return (
+        this.surroundingPages[this.surroundingPages.length - 1] !== this.count
+      );
+    },
     surroundingPages(): number[] {
       const current = this.current;
       let min = Math.max(current - 2, 1);
@@ -61,10 +83,10 @@ export default Vue.extend({
   list-style: none;
   width: fit-content;
   margin: 1rem 1rem;
+    font-weight: bold;
 
   &__element {
     transition: opacity ease-out 0.25s;
-    font-weight: bold;
     font-size: 1.25rem;
     color: inherit;
     text-decoration: unset;

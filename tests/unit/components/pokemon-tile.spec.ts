@@ -1,17 +1,22 @@
 import { shallowMount } from '@vue/test-utils';
 
 import PokemonTileComponent from '@/components/pokemon-tile.component.vue';
-import { PokemonsWithSprites } from '@/components/pokemon-tile.models';
+import { PokemonsReferencePage } from '@/models';
 import { PokemonSpritesService } from '@/services';
+
+type ExtendedPokemon = PokemonsReferencePage.PokemonExtendedReferenceModel;
 
 describe('PokemonTileComponent', () => {
   const mockPokemonId = 'idMock';
   const mockPokemonURL = `https://pokeapi.co/api/v2/pokemon/${mockPokemonId}/`;
 
-  const mockPokemon: PokemonsWithSprites = {
+  const mockId = 'mockId';
+
+  const mockPokemon: ExtendedPokemon = {
     name: 'pokemonNameMock',
     url: mockPokemonURL,
-    sprites: PokemonSpritesService.getSprites(mockPokemonURL),
+    id: mockId,
+    sprites: PokemonSpritesService.getSprites(mockId),
   };
 
   const createComponent = () => {

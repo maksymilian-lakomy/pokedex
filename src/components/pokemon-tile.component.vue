@@ -17,8 +17,9 @@
 import Vue from 'vue';
 
 import { getPokemonIdFromUrl, calculatePokemonSpriteWidth } from '@/helpers';
+import { PokemonsReferencePage } from '@/models';
 
-import { PokemonsWithSprites } from './pokemon-tile.models';
+type PokemonExtendedReferenceModel = PokemonsReferencePage.PokemonExtendedReferenceModel;
 
 export default Vue.extend({
   data() {
@@ -27,7 +28,7 @@ export default Vue.extend({
     };
   },
   props: {
-    pokemonWithSprites: {
+    extendedPokemon: {
       required: true,
       type: Object,
     },
@@ -45,8 +46,8 @@ export default Vue.extend({
     removeEventListener('resize', this.calculateMaxWidth);
   },
   computed: {
-    pokemon(): PokemonsWithSprites {
-      return this.pokemonWithSprites;
+    pokemon(): PokemonExtendedReferenceModel {
+      return this.extendedPokemon;
     },
     id(): string {
       return getPokemonIdFromUrl(this.pokemon.url);

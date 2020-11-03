@@ -1,3 +1,5 @@
+import { Pokemon } from './pokemon.model';
+
 export declare module PokemonsReferencePage {
   export interface PokemonReferenceModel {
     name: string;
@@ -9,5 +11,10 @@ export declare module PokemonsReferencePage {
     next: string;
     previous?: any;
     results: PokemonReferenceModel[];
+  }
+
+  export interface PokemonExtendedReferenceModel extends PokemonReferenceModel {
+    sprites: Pokemon.Sprites;
+    id: string;
   }
 }

@@ -1,8 +1,10 @@
-import { PokemonsWithSprites } from '@/components/pokemon-tile.models';
+import { PokemonsReferencePage } from '@/models';
+
 import { PokemonsPageDefault } from './pokemons-page/pokemons-page-default.class';
 import { PokemonsPageFiltered } from './pokemons-page/pokemons-page-filtered.class';
 import { PokemonsPage } from './pokemons-page/pokemons-page.class';
 
+type ExtendedPokemon = PokemonsReferencePage.PokemonExtendedReferenceModel;
 type Filters = Map<string, string[]>;
 
 export class PokemonsManager {
@@ -46,14 +48,16 @@ export class PokemonsManager {
     this.updatePokemonsType();
   }
 
-  public async getPokemons(page: number): Promise<PokemonsWithSprites[]> {
-    // TODO: ADD POKEMON ID HERE!!!!
-
+  public async getPokemons(page: number): Promise<ExtendedPokemon[]> {
     const pokemons = await this.pokemonsPage.getPokemons(
       this.offset(page),
       this.limit
     );
     return pokemons;
+  }
+
+  public get pagesAmount(): number {
+    return Math.ceil(this.pokemonsPage.pokemonsAmount / this.limit);
   }
 
   private updatePokemonsType(): void {

@@ -1,15 +1,20 @@
 import { AxiosResponse } from 'axios';
 
-import { PokemonsWithSprites } from '@/components/pokemon-tile.models';
-import { PokemonFilters } from '@/models';
+import { PokemonFilters, PokemonsReferencePage } from '@/models';
 import { PokemonSpritesService, PokemonsFilterService } from '@/services';
 
 import { PokemonsPage } from './pokemons-page.class';
+import { getPokemonIdFromUrl } from '@/helpers';
 
+type ExtendedPokemon = PokemonsReferencePage.PokemonExtendedReferenceModel;
 type Filters = Map<string, string[]>;
 
 export class PokemonsPageFiltered extends PokemonsPage {
-  private pokemons: PokemonsWithSprites[] | null = null;
+  private pokemons: ExtendedPokemon[] | null = null;
+
+  public get pokemonsAmount(): number {
+    return this.pokemons?.length || 0;
+  }
 
   constructor(private filters: Filters) {
     super();
@@ -18,7 +23,7 @@ export class PokemonsPageFiltered extends PokemonsPage {
   public async getPokemons(
     offset: number,
     limit: number
-  ): Promise<PokemonsWithSprites[]> {
+  ): Promise<ExtendedPokemon[]> {
     !this.pokemons && (await this.fetchPokemons());
 
     return this.pokemons!.slice(offset, offset + limit);
@@ -26,12 +31,16 @@ export class PokemonsPageFiltered extends PokemonsPage {
 
   private async fetchPokemons(): Promise<void> {
     const pokemons = await this.getPokemonFromAPI();
-    this.pokemons = pokemons.map((pokemon) => {
-      return {
-        ...pokemon,
-        sprites: PokemonSpritesService.getSprites(pokemon.url),
-      };
-    });
+    this.pokemons = pokemons
+      .map((pokemon) => {
+        const id = getPokemonIdFromUrl(pokemon.url);
+        return {
+          ...pokemon,
+          id,
+          sprites: PokemonSpritesService.getSprites(id),
+        };
+      })
+      .sort((a, b) => parseInt(a.id) - parseInt(b.id));
   }
 
   private async getPokemonFromAPI(): Promise<PokemonFilters.PokemonSpecy[]> {

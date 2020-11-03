@@ -1,4 +1,4 @@
-import { PokemonSpritesService } from '../../../src/services/pokemon-sprites.service';
+import { PokemonSpritesService } from '@/services/pokemon-sprites.service';
 
 describe(`PokemonSpritesService`, () => {
   it('should return front_default & back_default sprites', () => {
@@ -12,9 +12,8 @@ describe(`PokemonSpritesService`, () => {
 
   it('shoud have pokemon id inside sprites url', () => {
     const mockPokemonId = 'mock';
-    const mockPokemonURL = `https://pokeapi.co/api/v2/pokemon/${mockPokemonId}/`;
 
-    const result = PokemonSpritesService.getSprites(mockPokemonURL);
+    const result = PokemonSpritesService.getSprites(mockPokemonId);
 
     Object.values(result).forEach(pokemonURL => {
       expect(pokemonURL).toContain(mockPokemonId);
