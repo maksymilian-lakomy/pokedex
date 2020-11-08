@@ -2,6 +2,7 @@ import { PokemonsReferencePage } from '@/models';
 
 import { PokemonsPageDefault } from './pokemons-page/pokemons-page-default.class';
 import { PokemonsPageFiltered } from './pokemons-page/pokemons-page-filtered.class';
+import { PokemonsPageSearched } from './pokemons-page/pokemons-page-searched.class';
 import { PokemonsPage } from './pokemons-page/pokemons-page.class';
 
 type ExtendedPokemon = PokemonsReferencePage.PokemonExtendedReferenceModel;
@@ -10,6 +11,7 @@ type Filters = Map<string, string[]>;
 export class PokemonsManager {
   private filters: Filters = new Map();
   private pokemonsPage: PokemonsPage;
+  private searchText: string = '';
 
   constructor(private limit = 50) {
     this.pokemonsPage = new PokemonsPageDefault();
@@ -25,8 +27,9 @@ export class PokemonsManager {
     this.updatePokemonsType();
   }
 
-  public setFilters(filters: Filters) {
+  public setFilters(filters: Filters, searchText?: string) {
     this.filters = filters;
+    this.searchText = searchText || '';
 
     this.updatePokemonsType();
   }
@@ -62,9 +65,14 @@ export class PokemonsManager {
 
   private updatePokemonsType(): void {
     if (this.filters.size === 0) {
-      this.pokemonsPage = new PokemonsPageDefault();
+      this.pokemonsPage = this.searchText
+        ? new PokemonsPageSearched(this.searchText)
+        : new PokemonsPageDefault();
     } else {
-      this.pokemonsPage = new PokemonsPageFiltered(this.filters);
+      this.pokemonsPage = new PokemonsPageFiltered(
+        this.filters,
+        this.searchText
+      );
     }
   }
 

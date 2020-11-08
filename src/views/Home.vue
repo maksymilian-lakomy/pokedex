@@ -65,8 +65,10 @@ export default Vue.extend({
 
     try {
       const queries = getFiltersFromRouteQueries(to);
+      const searchText: string =
+        (to.query.s instanceof Array ? to.query.s[0] : to.query.s) || '';
       const pokemonService = new PokemonsManager(50);
-      pokemonService.setFilters(queries);
+      pokemonService.setFilters(queries, searchText);
 
       const page = await pokemonService.getPokemons(currentPage);
 
@@ -86,8 +88,10 @@ export default Vue.extend({
       const currentPage = +to.query.p;
 
       const queries = getFiltersFromRouteQueries(to);
+      const searchText: string =
+        (to.query.s instanceof Array ? to.query.s[0] : to.query.s) || '';
       const pokemonService = new PokemonsManager(50);
-      pokemonService.setFilters(queries);
+      pokemonService.setFilters(queries, searchText);
 
       const page = await pokemonService.getPokemons(currentPage);
 
@@ -109,11 +113,9 @@ export default Vue.extend({
   flex-direction: row;
 
   &__filters-column {
-
   }
 
   &__content-column {
-
   }
 }
 .pokemons-list {

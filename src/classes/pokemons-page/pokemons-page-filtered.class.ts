@@ -4,7 +4,7 @@ import { PokemonFilters, PokemonsReferencePage } from '@/models';
 import { PokemonSpritesService, PokemonsFilterService } from '@/services';
 
 import { PokemonsPage } from './pokemons-page.class';
-import { getPokemonIdFromUrl } from '@/helpers';
+import { getPokemonIdFromUrl, filterPokemonsByNameFactory } from '@/helpers';
 
 type ExtendedPokemon = PokemonsReferencePage.PokemonExtendedReferenceModel;
 type Filters = Map<string, string[]>;
@@ -16,7 +16,7 @@ export class PokemonsPageFiltered extends PokemonsPage {
     return this.pokemons?.length || 0;
   }
 
-  constructor(private filters: Filters) {
+  constructor(private filters: Filters, private searchText: string) {
     super();
   }
 
@@ -31,7 +31,7 @@ export class PokemonsPageFiltered extends PokemonsPage {
 
   private async fetchPokemons(): Promise<void> {
     const pokemons = await this.getPokemonFromAPI();
-    this.pokemons = pokemons
+    const extendedPokemons = pokemons
       .map((pokemon) => {
         const id = getPokemonIdFromUrl(pokemon.url);
         return {
@@ -41,6 +41,12 @@ export class PokemonsPageFiltered extends PokemonsPage {
         };
       })
       .sort((a, b) => parseInt(a.id) - parseInt(b.id));
+    if (this.searchText) {
+      const filterPokemonsByName = filterPokemonsByNameFactory(this.searchText);
+      this.pokemons = extendedPokemons.filter(filterPokemonsByName);
+    } else {
+      this.pokemons = extendedPokemons;
+    }
   }
 
   private async getPokemonFromAPI(): Promise<PokemonFilters.PokemonSpecy[]> {

@@ -5,8 +5,9 @@ type ExtendedPokemon = PokemonsReferencePage.PokemonExtendedReferenceModel;
 export abstract class PokemonsPage {
   public abstract async getPokemons(
     offset: number,
-    limit: number
+    limit: number,
   ): Promise<ExtendedPokemon[]>;
 
   public abstract get pokemonsAmount(): number;
+  
 }
