@@ -1,5 +1,12 @@
 <template>
   <div class="home">
+    <div class="home__header">
+      <input
+        type="text"
+        :value="searchText"
+        @change="onChangeSearchText($event.target.value)"
+      />
+    </div>
     <div class="home__filters-column">
       <v-filters
         :filters="filters"
@@ -8,7 +15,11 @@
       ></v-filters>
     </div>
     <div class="home__content-column">
-      <v-pagination :count="pagesAmount" :current="currentPage" />
+      <v-pagination
+        :count="pagesAmount"
+        :current="currentPage"
+        v-if="pokemonsAmount"
+      />
       <ol class="pokemons-list">
         <li v-for="pokemon in pokemonsReferencePage" :key="pokemon.url">
           <v-pokemon-tile :extendedPokemon="pokemon" />
@@ -40,6 +51,8 @@ import { getFiltersFromRouteQueries } from '@/helpers';
 let pokemonsReferencePage: PokemonsReferencePage.PokemonExtendedReferenceModel[] = [];
 let filters = new Map<string, string[]>();
 
+const limit = 50;
+
 export default Vue.extend({
   components: {
     'v-filters': FiltersComponent,
@@ -50,9 +63,10 @@ export default Vue.extend({
     return {
       pokemonsReferencePage: pokemonsReferencePage,
       currentPage: 1,
-      pagesAmount: 1,
+      pokemonsAmount: 0,
       filters: filters,
       activeFilters: filters,
+      searchText: '',
     };
   },
   async beforeRouteEnter(to, from, next) {
@@ -74,8 +88,8 @@ export default Vue.extend({
       const queries = getFiltersFromRouteQueries(to);
       const searchText: string =
         (to.query.s instanceof Array ? to.query.s[0] : to.query.s) || '';
-      const pokemonService = new PokemonsManager(50);
-      pokemonService.setFilters(queries, searchText);
+      const pokemonService = new PokemonsManager(limit);
+      pokemonService.setFilters(queries, searchText.replaceAll(' ', '-'));
 
       const page = await pokemonService.getPokemons(currentPage);
 
@@ -85,9 +99,10 @@ export default Vue.extend({
       next((vm) => {
         vm.$set(vm.$data, 'pokemonsReferencePage', page);
         vm.$set(vm.$data, 'currentPage', currentPage);
-        vm.$set(vm.$data, 'pagesAmount', pokemonService.pagesAmount);
+        vm.$set(vm.$data, 'pokemonsAmount', pokemonService.pokemonsAmount);
         vm.$set(vm.$data, 'filters', filters);
         vm.$set(vm.$data, 'activeFilters', queries);
+        vm.$set(vm.$data, 'searchText', searchText);
       });
     } catch (error) {
       console.error(error);
@@ -102,15 +117,16 @@ export default Vue.extend({
       const queries = getFiltersFromRouteQueries(to);
       const searchText: string =
         (to.query.s instanceof Array ? to.query.s[0] : to.query.s) || '';
-      const pokemonService = new PokemonsManager(50);
-      pokemonService.setFilters(queries, searchText);
+      const pokemonService = new PokemonsManager(limit);
+      pokemonService.setFilters(queries, searchText.replaceAll(' ', '-'));
 
       const page = await pokemonService.getPokemons(currentPage);
 
       this.$set(this.$data, 'pokemonsReferencePage', page);
       this.$set(this.$data, 'currentPage', currentPage);
-      this.$set(this.$data, 'pagesAmount', pokemonService.pagesAmount);
+      this.$set(this.$data, 'pokemonsAmount', pokemonService.pokemonsAmount);
       this.$set(this.$data, 'activeFilters', queries);
+      this.$set(this.$data, 'searchText', searchText);
 
       next();
     } catch (error) {
@@ -118,7 +134,7 @@ export default Vue.extend({
     }
   },
   methods: {
-    onFiltersChange(filters: Map<string, string[]>) {
+    onFiltersChange(filters: Map<string, string[]>): void {
       let queryWithoutFilters: Record<string, (string | null)[]> = {};
       Object.assign(queryWithoutFilters, this.$route.query);
 
@@ -136,24 +152,53 @@ export default Vue.extend({
         query: { ...queryWithoutFilters, p: '1' },
       });
     },
+    onChangeSearchText(searchText: string): void {
+      let query: Record<string, (string | null)[]> = {};
+      Object.assign(query, this.$route.query);
+      delete query['s'];
+
+      const searchQuery = searchText ? { s: searchText } : {};
+
+      this.$router.push({
+        ...this.$route,
+        name: this.$route.name!,
+        query: {
+          ...query,
+          ...searchQuery,
+          p: '1',
+        },
+      });
+    },
+  },
+  computed: {
+    pagesAmount(): number {
+      return Math.ceil(this.pokemonsAmount / limit);
+    },
   },
 });
 </script>
 
 <style lang="scss" scoped>
 .home {
-  display: flex;
-  flex-direction: row;
+  display: grid;
+  grid-template-columns: 1fr 6fr;
+  grid-template-areas: 'header header' 'filters pokemons';
+
+  &__header {
+    grid-area: header;
+  }
 
   &__filters-column {
+    grid-area: filters;
   }
 
   &__content-column {
+    grid-area: pokemons;
   }
 }
 .pokemons-list {
   display: grid;
-  grid-template-columns: repeat(9, 1fr);
+  grid-template-columns: repeat(7, 1fr);
   column-gap: 1rem;
   row-gap: 1rem;
   list-style: none;

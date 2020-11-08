@@ -59,8 +59,8 @@ export class PokemonsManager {
     return pokemons;
   }
 
-  public get pagesAmount(): number {
-    return Math.ceil(this.pokemonsPage.pokemonsAmount / this.limit);
+  public get pokemonsAmount(): number {
+    return this.pokemonsPage.pokemonsAmount;
   }
 
   private updatePokemonsType(): void {
