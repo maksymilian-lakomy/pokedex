@@ -11,7 +11,7 @@
         :value="isActive(filterName, filter)"
         @input="onValueChange(filterName, filter)"
       >
-        {{ filter | name }}
+        {{ filter | pokemonName }}
       </v-checkbox>
     </v-form-field>
   </div>
@@ -19,6 +19,9 @@
 
 <script lang="ts">
 import Vue from 'vue';
+
+import { pokemonName } from '@/components/filters';
+
 import CheckboxComponent from './checkbox.component.vue';
 import FormFieldComponent from './form-field.component.vue';
 
@@ -80,9 +83,7 @@ export default Vue.extend({
     },
   },
   filters: {
-    name(value: string) {
-      return `${value[0].toUpperCase()}${value.replace('-', ' ').slice(1)}`;
-    },
+    pokemonName,
   },
 });
 </script>

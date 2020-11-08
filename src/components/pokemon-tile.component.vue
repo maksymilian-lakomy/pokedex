@@ -9,7 +9,7 @@
       }}</span>
       <img :src="pokemon.sprites.front_default" class="pokemon-tile__sprite" />
     </div>
-    <figcaption class="pokemon-tile__name">{{ pokemon.name }}</figcaption>
+    <figcaption class="pokemon-tile__name">{{ pokemon.name | pokemonName }}</figcaption>
   </figure>
 </template>
 
@@ -18,6 +18,7 @@ import Vue from 'vue';
 
 import { getPokemonIdFromUrl, calculatePokemonSpriteWidth } from '@/helpers';
 import { PokemonsReferencePage } from '@/models';
+import { pokemonName } from '@/components/filters';
 
 type PokemonExtendedReferenceModel = PokemonsReferencePage.PokemonExtendedReferenceModel;
 
@@ -55,6 +56,9 @@ export default Vue.extend({
     fontSize(): string {
       return `${2 / Math.max(this.id.length, 2)}em`;
     },
+  },
+  filters: {
+    pokemonName,
   },
 });
 </script>
