@@ -1,12 +1,12 @@
 import { Route } from 'vue-router';
 
-import { PokemonsFilterService } from '@/services';
+import { FiltersReferencePage } from '@/models';
 
 type Filters = Map<string, string[]>;
 
 export const getFiltersFromRouteQueries = (route: Route): Filters => {
   const queriedFilters = Object.keys(route.query).filter((query) =>
-    PokemonsFilterService.availableFilters.includes(query)
+    FiltersReferencePage.availableFilters.includes(query)
   );
 
   const filtersMap: Filters = new Map();

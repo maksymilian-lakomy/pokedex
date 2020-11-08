@@ -60,6 +60,8 @@ export default Vue.extend({
 </script>
 
 <style lang="scss" scoped>
+@import '@/styles/style';
+
 .pokemon-tile {
   $block-name: &;
 
@@ -79,7 +81,8 @@ export default Vue.extend({
   }
 
   &__id {
-    transition: opacity ease-out 0.1s;
+    @include transition(0.1s, opacity);
+
     font-size: 1em;
     position: absolute;
     color: #707070;
@@ -92,7 +95,8 @@ export default Vue.extend({
   }
 
   &__sprite {
-    transition: opacity ease-out 0.1s, padding ease-out 0.1s;
+    @include transition(0.1s, opacity, padding);
+
     position: absolute;
     left: 50%;
     top: 50%;

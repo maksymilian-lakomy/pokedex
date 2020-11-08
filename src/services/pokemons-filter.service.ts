@@ -5,8 +5,6 @@ import { service } from './base.service';
 type PokemonFiltersModel = PokemonFilters.PokemonFiltersModel;
 
 export namespace PokemonsFilterService {
-  export const availableFilters = ['color', 'habitat', 'shape'];
-
   export const getAll = async (
     filterType: string,
     filter: string

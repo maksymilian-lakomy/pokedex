@@ -1,4 +1,4 @@
-export declare module PokemonSpecies {
+export namespace PokemonSpecies {
   export interface Color {
     name: string;
     url: string;

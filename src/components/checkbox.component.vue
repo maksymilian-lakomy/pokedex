@@ -1,10 +1,14 @@
 <template>
   <label class="checkbox">
-    <span class="checkbox__label">
+    <input
+      type="checkbox"
+      :name="name"
+      :checked="value"
+      @input="$emit('input', $event.target.checked)"
+    />
+    <div class="checkbox__label">
       <slot />
-    </span>
-    <input type="checkbox" />
-    <span class="checkmark"></span>
+    </div>
   </label>
 </template>
 
@@ -12,24 +16,50 @@
 import Vue from 'vue';
 export default Vue.extend({
   name: 'CheckboxComponent',
+  props: {
+    name: String,
+    value: {
+      type: Boolean,
+      default: false,
+    },
+  },
 });
 </script>
 
 <style lang="scss">
+@import '@/styles/style';
+
 .checkbox {
   $block-name: &;
-  
-  display: flex;
-  font-size: 1.25rem;
-  width: 100%;
-  align-items: center;
 
-  #{$block-name}__label {
-    
+  cursor: pointer !important;
+  position: relative;
+  z-index: 0;
+  width: 100%;
+  display: block;
+
+  input[type='checkbox'] {
+    display: none;
   }
 
-  input {
-    margin-left: auto;
+  #{$block-name}__label {
+    @include transition(NULL, color, background-color, opacity);
+
+    display: flex;
+    align-items: center;
+    width: calc(100% - 2 * 0.5rem);
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.5rem;
+    opacity: 0.5;
+  }
+
+  input[type='checkbox']:checked + #{$block-name}__label {
+    background-color: #e9e9e9;
+    opacity: 1;
+  }
+
+  &:hover #{$block-name}__label {
+    opacity: 1;
   }
 }
 </style>

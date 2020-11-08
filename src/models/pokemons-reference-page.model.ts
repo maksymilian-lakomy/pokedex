@@ -1,6 +1,6 @@
 import { Pokemon } from './pokemon.model';
 
-export declare module PokemonsReferencePage {
+export namespace PokemonsReferencePage {
   export interface PokemonReferenceModel {
     name: string;
     url: string;

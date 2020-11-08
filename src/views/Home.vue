@@ -1,7 +1,11 @@
 <template>
   <div class="home">
     <div class="home__filters-column">
-      <v-filters></v-filters>
+      <v-filters
+        :filters="filters"
+        :value="activeFilters"
+        @input="onFiltersChange"
+      ></v-filters>
     </div>
     <div class="home__content-column">
       <v-pagination :count="pagesAmount" :current="currentPage" />
@@ -22,8 +26,8 @@ import {
   PokemonSpritesService,
   PokemonsFilterService,
 } from '@/services';
-import { Pokemon, PokemonsReferencePage } from '@/models';
-import { PokemonsManager } from '@/classes/pokemons-manager.class';
+import { FiltersReferencePage, Pokemon, PokemonsReferencePage } from '@/models';
+import { PokemonsManager, FiltersManager } from '@/classes';
 
 import PaginationComponent from '@/components/pagination.component.vue';
 import FiltersComponent from '@/components/filters.component.vue';
@@ -34,6 +38,7 @@ import { getFiltersFromRouteQueries } from '@/helpers';
 
 /* eslint-disable prefer-const */
 let pokemonsReferencePage: PokemonsReferencePage.PokemonExtendedReferenceModel[] = [];
+let filters = new Map<string, string[]>();
 
 export default Vue.extend({
   components: {
@@ -46,6 +51,8 @@ export default Vue.extend({
       pokemonsReferencePage: pokemonsReferencePage,
       currentPage: 1,
       pagesAmount: 1,
+      filters: filters,
+      activeFilters: filters,
     };
   },
   async beforeRouteEnter(to, from, next) {
@@ -72,10 +79,15 @@ export default Vue.extend({
 
       const page = await pokemonService.getPokemons(currentPage);
 
+      const filtersManager = new FiltersManager();
+      const filters = await filtersManager.getFilters();
+
       next((vm) => {
         vm.$set(vm.$data, 'pokemonsReferencePage', page);
         vm.$set(vm.$data, 'currentPage', currentPage);
         vm.$set(vm.$data, 'pagesAmount', pokemonService.pagesAmount);
+        vm.$set(vm.$data, 'filters', filters);
+        vm.$set(vm.$data, 'activeFilters', queries);
       });
     } catch (error) {
       console.error(error);
@@ -98,11 +110,32 @@ export default Vue.extend({
       this.$set(this.$data, 'pokemonsReferencePage', page);
       this.$set(this.$data, 'currentPage', currentPage);
       this.$set(this.$data, 'pagesAmount', pokemonService.pagesAmount);
+      this.$set(this.$data, 'activeFilters', queries);
 
       next();
     } catch (error) {
       console.error(error);
     }
+  },
+  methods: {
+    onFiltersChange(filters: Map<string, string[]>) {
+      let queryWithoutFilters: Record<string, (string | null)[]> = {};
+      Object.assign(queryWithoutFilters, this.$route.query);
+
+      FiltersReferencePage.availableFilters.forEach((filterName) => {
+        delete queryWithoutFilters[filterName];
+      });
+
+      filters.forEach((_filters, filterName) => {
+        queryWithoutFilters[filterName] = _filters;
+      });
+
+      this.$router.push({
+        ...this.$route,
+        name: this.$route.name!,
+        query: { ...queryWithoutFilters, p: '1' },
+      });
+    },
   },
 });
 </script>

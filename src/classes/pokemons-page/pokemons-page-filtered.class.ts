@@ -31,22 +31,23 @@ export class PokemonsPageFiltered extends PokemonsPage {
 
   private async fetchPokemons(): Promise<void> {
     const pokemons = await this.getPokemonFromAPI();
-    const extendedPokemons = pokemons
-      .map((pokemon) => {
-        const id = getPokemonIdFromUrl(pokemon.url);
-        return {
-          ...pokemon,
-          id,
-          sprites: PokemonSpritesService.getSprites(id),
-        };
-      })
-      .sort((a, b) => parseInt(a.id) - parseInt(b.id));
+    let extendedPokemons = pokemons.map((pokemon) => {
+      const id = getPokemonIdFromUrl(pokemon.url);
+      return {
+        ...pokemon,
+        id,
+        sprites: PokemonSpritesService.getSprites(id),
+      };
+    });
+
     if (this.searchText) {
       const filterPokemonsByName = filterPokemonsByNameFactory(this.searchText);
-      this.pokemons = extendedPokemons.filter(filterPokemonsByName);
-    } else {
-      this.pokemons = extendedPokemons;
+      extendedPokemons = extendedPokemons.filter(filterPokemonsByName);
     }
+
+    this.pokemons = extendedPokemons.sort(
+      (a, b) => parseInt(a.id) - parseInt(b.id)
+    );
   }
 
   private async getPokemonFromAPI(): Promise<PokemonFilters.PokemonSpecy[]> {
