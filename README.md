@@ -7,8 +7,8 @@ I'm currently moving codebase to TypeScript while still staying with Vue 2. Besi
 ### Preview of the new version
 https://dev.maksymilianlakomy.pl/
 
-### Preview of the old version
-https://dev.maksymilianlakomy.pl/
+### The old version
+https://pokedex.maksymilianlakomy.pl/
 
 ### __Starts development server__
 ```
