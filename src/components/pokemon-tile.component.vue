@@ -1,5 +1,5 @@
 <template>
-  <figure class="pokemon-tile">
+  <figure class="pokemon-tile" tabindex="0">
     <div
       class="pokemon-tile__sprite-wrapper"
       :style="{ 'font-size': maxWidth }"
@@ -76,6 +76,7 @@ export default Vue.extend({
     position: relative;
     background-color: #e9e9e9;
     border-radius: 1rem;
+    overflow: hidden;
 
     &::after {
       content: '';

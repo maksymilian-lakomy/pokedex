@@ -1,12 +1,5 @@
 <template>
   <div class="home">
-    <div class="home__header">
-      <input
-        type="text"
-        :value="searchText"
-        @change="onChangeSearchText($event.target.value)"
-      />
-    </div>
     <div class="home__filters-column">
       <v-filters
         :filters="filters"
@@ -15,12 +8,22 @@
       ></v-filters>
     </div>
     <div class="home__content-column">
-      <v-pagination
-        :count="pagesAmount"
-        :current="currentPage"
-        v-if="pokemonsAmount"
-      />
-      <ol class="pokemons-list">
+      <div class="home__content-navigation">
+        <v-input
+          type="text"
+          :value="searchText"
+          placeholder="what are you looking for?"
+          @change="onChangeSearchText($event)"
+        />
+        <v-pagination
+          class="home__content-pagination"
+          :count="pagesAmount"
+          :current="currentPage"
+          v-if="pokemonsAmount"
+          @pageChange="onPageChange($event)"
+        />
+      </div>
+      <ol class="home__content-pokemons-list">
         <li v-for="pokemon in pokemonsReferencePage" :key="pokemon.url">
           <v-pokemon-tile :extendedPokemon="pokemon" />
         </li>
@@ -43,6 +46,7 @@ import { PokemonsManager, FiltersManager } from '@/classes';
 import PaginationComponent from '@/components/pagination.component.vue';
 import FiltersComponent from '@/components/filters.component.vue';
 import PokemonTileComponent from '@/components/pokemon-tile.component.vue';
+import InputComponent from '@/components/input.component.vue';
 
 import { Location } from 'vue-router';
 import { getFiltersFromRouteQueries } from '@/helpers';
@@ -58,6 +62,7 @@ export default Vue.extend({
     'v-filters': FiltersComponent,
     'v-pagination': PaginationComponent,
     'v-pokemon-tile': PokemonTileComponent,
+    'v-input': InputComponent,
   },
   data() {
     return {
@@ -169,6 +174,20 @@ export default Vue.extend({
         },
       });
     },
+    onPageChange(page: number): void {
+      if (`${page}` === this.$route.query.p) {
+        return;
+      }
+
+      this.$router.push({
+        ...this.$route,
+        name: this.$route.name!,
+        query: {
+          ...this.$route.query,
+          p: `${page}`,
+        },
+      });
+    },
   },
   computed: {
     pagesAmount(): number {
@@ -180,29 +199,44 @@ export default Vue.extend({
 
 <style lang="scss" scoped>
 .home {
-  display: grid;
-  grid-template-columns: 1fr 6fr;
-  grid-template-areas: 'header header' 'filters pokemons';
-
-  &__header {
-    grid-area: header;
-  }
+  display: flex;
+  flex-direction: row;
 
   &__filters-column {
-    grid-area: filters;
+    padding: 1rem 0;
+    width: fit-content;
+    border-right: 2px solid #e9e9e9;
   }
 
   &__content-column {
-    grid-area: pokemons;
+    position: relative;
+    width: 100%;
   }
-}
-.pokemons-list {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  column-gap: 1rem;
-  row-gap: 1rem;
-  list-style: none;
-  padding: 0;
-  margin: 0;
+
+  &__content-navigation {
+    top: 0;
+    position: sticky;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 1rem;
+    background-color: white;
+    z-index: 1000;
+    border-bottom: 2px solid #e5e5e5;
+  }
+
+  &__content-pagination {
+    margin-left: auto;
+  }
+
+  &__content-pokemons-list {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    column-gap: 1rem;
+    row-gap: 1rem;
+    list-style: none;
+    padding: 0;
+    margin: 1rem;
+  }
 }
 </style>

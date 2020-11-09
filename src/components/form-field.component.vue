@@ -28,6 +28,7 @@ export default Vue.extend({
   width: calc(100% - 2 * 0.5rem);
 
   #{$block-name}__headline {
+    margin: .5rem 0;
     &::first-letter {
       text-transform: uppercase;
     }
@@ -37,7 +38,7 @@ export default Vue.extend({
     width: 100%;
 
     & > *:not(:last-child) {
-      margin-bottom: 0.25rem;
+      margin-bottom: 0.5rem;
     }
   }
 }

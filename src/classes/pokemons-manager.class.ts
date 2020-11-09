@@ -24,7 +24,7 @@ export class PokemonsManager {
       this.filters.set(name, [value]);
     }
 
-    this.updatePokemonsType();
+    this.updatePokemonsType();  
   }
 
   public setFilters(filters: Filters, searchText?: string) {

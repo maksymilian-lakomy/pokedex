@@ -39,7 +39,10 @@ export default Vue.extend({
   display: block;
 
   input[type='checkbox'] {
-    display: none;
+    position: absolute;
+    height: 0;
+    width: 0;
+    opacity: 0;
   }
 
   #{$block-name}__label {
@@ -52,6 +55,10 @@ export default Vue.extend({
     border-radius: 0.5rem;
     opacity: 0.5;
   }
+
+  // input[type='checkbox']:focus + #{$block-name}__label {
+  //   outline: 2px solid black;
+  // }
 
   input[type='checkbox']:checked + #{$block-name}__label {
     background-color: #e9e9e9;
